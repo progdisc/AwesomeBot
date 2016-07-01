@@ -60,6 +60,13 @@ bot.on('message', function (message)
         bot.reply(message, helpCommands.jsText);
         break;
       }
+
+      case '!bot help dotnet':
+      case '!bot help c#':
+      {
+        bot.reply(message, helpCommands.dnText);
+        break;
+      }
   }
   });
 
