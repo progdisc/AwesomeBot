@@ -1,0 +1,22 @@
+{
+    "name": "commandtext",
+    "version": "1.0.0",
+    "description": "",
+    "main": "TheAwesomeBot.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/fzxt/commandText.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/fzxt/commandText/issues"
+    },
+    "homepage": "https://github.com/fzxt/commandText#readme",
+    "dependencies": {
+        "discord.js": "^8.0.0"
+    }
+}
