@@ -45,7 +45,7 @@ bot.on('message', function (message)
 
     case '!bot help php':
       {
-        bot.reply(message, helpcommands.phpText);
+        bot.reply(message, helpCommands.phpText);
         break;
       }
 
