@@ -18,4 +18,9 @@ https://www.codecademy.com/learn/javascript \
 https://www.udacity.com/course/javascript-basics--ud804 \
 https://developer.mozilla.org/en-US/docs/Web/JavaScript \
 ',
+ dnText: 'See these links/courses for learning .NET/C#: \
+https://msdn.microsoft.com/en-us/library/aa288436(v=vs.71).aspx \
+https://msdn.microsoft.com/en-us/library/xk24xdbe(v=vs.90).aspx \
+https://www.youtube.com/watch?v=Yj0G5UdBJZw&list=PLEbaEyM-xt9mVQEAXGlRRmbO2Qp_oqF-n \
+',
 };
