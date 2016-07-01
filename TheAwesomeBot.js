@@ -43,6 +43,12 @@ bot.on('message', function (message)
         break;
       }
 
+    case '!bot help php':
+      {
+        bot.reply(message, helpcommands.phpText);
+        break;
+      }
+
     case '!bot help style':
       {
         bot.reply(message, "Here is a link to Discord's text styles: https://support.discordapp.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline-");
@@ -61,8 +67,9 @@ bot.on('message', function (message)
         break;
       }
 
-      case '!bot help dotnet':
-      case '!bot help c#':
+    case '!bot help dotnet':
+    case '!bot help .net':
+    case '!bot help c#':
       {
         bot.reply(message, helpCommands.dnText);
         break;
