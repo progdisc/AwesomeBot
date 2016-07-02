@@ -31,7 +31,10 @@ https://www.youtube.com/watch?v=Yj0G5UdBJZw&list=PLEbaEyM-xt9mVQEAXGlRRmbO2Qp_oq
   style: "Here is a link to Discord's text styles: " +
     "https://support.discordapp.com" +
     "/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline-"
-};
+,
+react: 'See these links for learning ReactJS/Flux/Redux: \
+https://facebook.github.io/react/docs/getting-started.html \
+https://www.youtube.com/watch?v=MhkGQAoc7bc&list=PLoYCgNOIyGABj2GQSlDRjgvXtqfDxKm5b '};
 
 module.exports['.net'] = module.exports.dotnet
 module.exports['c#'] = module.exports.dotnet
