@@ -40,15 +40,14 @@ bot.on('message', function (message) {
   if (jscompileindex > 0) {
     return bot.reply(message, safer_eval(message.content.substr(jscompileindex + 7)))
   }
-
 });
 
 function safer_eval(code) {
-  var result;
+  var result = 'Executing javascript ```js\n' + code + '\n//=> ';
   try {
-    result = vm.runInNewContext(code, undefined, {timeout: 100})
+    result += vm.runInNewContext(code, undefined, {timeout: 100}) + '```'
   } catch (e) {
-    result = e.toString();
+    result += e.toString() + '```';
   }
   return result;
 }
