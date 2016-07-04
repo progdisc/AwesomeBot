@@ -3,7 +3,7 @@ module.exports = {
 https://docs.python.org/2/ \
 https://docs.python.org/3/ \
 https://www.udacity.com/course/programming-foundations-with-python--ud036 \
-http://learnpythonthehardway.org/book/ \
+https://automatetheboringstuff.com/ \
 ',
   java: 'See these links/courses for learning Java: \
 https://docs.oracle.com/javase/7/docs/api/ \
