@@ -43,7 +43,7 @@ bot.on('message', function (message) {
 });
 
 function safer_eval(code) {
-  var result = 'Executing javascript ```js\n' + code + '\n//=> ';
+  var result = 'Is this what you want?? ```js\n' + code + '\n//=> ';
   try {
     result += vm.runInNewContext(code, undefined, {timeout: 100}) + '```'
   } catch (e) {
