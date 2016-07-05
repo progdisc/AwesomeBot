@@ -41,7 +41,7 @@ bot.on('message', function (message) {
 
 function safer_eval(code) {
   var result = 'Executing javascript ```js\n' + code + '\n';
-  var buffer = ''
+  var buffer = '';
 
   function log() {
     buffer += '//[log] ' + Array.prototype.slice.call(arguments).join(' ') + '\n';
@@ -49,18 +49,19 @@ function safer_eval(code) {
 
   var context = {
     log: log,
-    console: { log: log, info: log, warn: log, error: log }
+    console: { log: log, info: log, warn: log, error: log },
+  };
+
+  var last_exp;
+  try {
+    last_exp = vm.runInNewContext(code, context, { timeout: 100 });
+  } catch (e) {
+    last_exp = e.toString();
   }
 
-  var last_exp
-  try {
-    last_exp = vm.runInNewContext(code, context, { timeout: 100 })
-  } catch (e) {
-    last_exp = e.toString()
-  }
-  result += buffer + '//=> ' + last_exp + '```'
+  result += buffer + '//=> ' + last_exp + '```';
 
   return result;
 }
 
-bot.loginWithToken('MTk4OTMwNDMyNDg0NTczMTg0.Clr70w.SgQV-SK9VKYOFgFkC1pK3QyXwP0');
+bot.loginWithToken('MTk4MjQ5NTI1ODU1NTE4NzIx.Cldcvw.xAQgYTI9IN_ACmCTBVydTQiM66k');
