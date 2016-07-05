@@ -4,8 +4,9 @@ var bot = new Discord.Client();
 
 var helpCommands = require('./commands/helpText.js');
 
-var vm = require('vm');
+var jseval = require('./commands/jseval');
 
+var comment_multi_line = s => s.split('\n').map(line => '// ' + line).join('\n')
 
 // var data = {
 //   greeting: 'Hello',
@@ -15,7 +16,9 @@ var vm = require('vm');
 // console.log(result); // 'Hello! I am TheAwesomeBot.'
 
 var botcmd = '!bot',
-  helpcmd = 'help';
+  helpcmd = 'help',
+  // js_eval_cmd should end with a space
+  js_eval_cmd = 'jseval ';
 
 var basicHelp = "Awesome is my name, don't wear it out! " +
   `Please type '${botcmd} ${helpcmd} *channel you need help with*' for more info.`;
@@ -31,39 +34,28 @@ var simpleResponses = Object.assign(helpObj,
 
 bot.on('message', function (message) {
   var key = message.content.toLowerCase().trim();
-  if (simpleResponses[key]) return bot.reply(message, simpleResponses[key]);
+  if (simpleResponses[key])
+    return bot.reply(message, simpleResponses[key]);
 
-  if (message.content.indexOf(botcmd) !== 0) return;
+  if (message.content.indexOf(botcmd) !== 0)
+    return;
 
-  var jscompileindex = message.content.indexOf('jseval');
+  var js_eval_idx = message.content.indexOf(js_eval_cmd);
+  if (js_eval_idx > 0) {
+    var code = message.content.substr(js_eval_idx + js_eval_cmd.length);
+    var result = jseval(code);
+    var buffer = result.buffer.length ?
+      result.buffer.map(comment_multi_line).join('\n') + '\n' :
+      '';
 
-  if (jscompileindex > 0) {
-    return bot.reply(message, safer_eval(message.content.substr(jscompileindex + 7)));
+    var output = "Executing javascript ```js\n" + 
+      result.code + '\n' + buffer +
+      '//=> ' + result.last_expression + '```';
+
+    return bot.reply(message, output);
   }
+
 });
 
-function safer_eval(code) {
-  var result = 'Executing javascript ```js\n' + code + '\n';
-  var buffer = ''
-
-  function log() {
-    buffer += '//[log] ' + Array.prototype.slice.call(arguments).join(' ') + '\n';
-  }
-
-  var context = {
-    log: log,
-    console: { log: log, info: log, warn: log, error: log }
-  }
-
-  var last_exp
-  try {
-    last_exp = vm.runInNewContext(code, context, { timeout: 100 })
-  } catch (e) {
-    last_exp = e.toString()
-  }
-  result += buffer + '//=> ' + last_exp + '```'
-
-  return result;
-}
 
 bot.loginWithToken('MTk4MjQ5NTI1ODU1NTE4NzIx.Cldcvw.xAQgYTI9IN_ACmCTBVydTQiM66k');
