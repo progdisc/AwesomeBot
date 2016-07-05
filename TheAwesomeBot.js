@@ -43,12 +43,25 @@ bot.on('message', function (message) {
 });
 
 function safer_eval(code) {
-  var result = 'Executing javascript ```js\n' + code + '\n//=> ';
-  try {
-    result += vm.runInNewContext(code, undefined, { timeout: 100 }) + '```';
-  } catch (e) {
-    result += e.toString() + '```';
+  var result = 'Executing javascript ```js\n' + code + '\n';
+  var buffer = ''
+
+  function log() {
+    buffer += '//[log] ' + Array.prototype.slice.call(arguments).join(' ') + '\n';
   }
+
+  var context = {
+    log: log,
+    console: { log: log, info: log, warn: log, error: log }
+  }
+
+  var last_exp
+  try {
+    last_exp = vm.runInNewContext(code, context, { timeout: 100 })
+  } catch (e) {
+    last_exp = e.toString()
+  }
+  result += buffer + '//=> ' + last_exp + '```'
 
   return result;
 }
