@@ -1,21 +1,13 @@
 var Discord = require('discord.js');
+var vm = require('vm');
+
+var helpCommands = require('./commands/helpText');
+var stream = require('./commands/stream');
 
 var bot = new Discord.Client();
 
-var helpCommands = require('./commands/helpText.js');
-
-var vm = require('vm');
-
-
-// var data = {
-//   greeting: 'Hello',
-//   name: 'TheAwesomeBot',
-// };
-// var result = `${data.greeting}! I am ${data.name}.`;
-// console.log(result); // 'Hello! I am TheAwesomeBot.'
-
-var botcmd = '!bot',
-  helpcmd = 'help';
+var botcmd = '!bot';
+var helpcmd = 'help';
 
 var basicHelp = "Awesome is my name, don't wear it out! " +
   `Please type '${botcmd} ${helpcmd} *channel you need help with*' for more info.`;
@@ -31,9 +23,14 @@ var simpleResponses = Object.assign(helpObj,
 
 bot.on('message', function (message) {
   var key = message.content.toLowerCase().trim();
+
   if (simpleResponses[key]) return bot.reply(message, simpleResponses[key]);
 
-  if (message.content.indexOf(botcmd) !== 0) return;
+  stream.checkAndTrackJoinMeLinks(bot, message);
+
+  if (key.indexOf(botcmd) !== 0) return;
+
+  stream.handleJoinMeCommands(bot, message);
 
   var jscompileindex = message.content.indexOf('jseval');
 
@@ -53,4 +50,4 @@ function safer_eval(code) {
   return result;
 }
 
-bot.loginWithToken('MTk4MjQ5NTI1ODU1NTE4NzIx.Cldcvw.xAQgYTI9IN_ACmCTBVydTQiM66k');
+bot.loginWithToken('MTk4OTMwNDMyNDg0NTczMTg0.Clr70w.SgQV-SK9VKYOFgFkC1pK3QyXwP0');
