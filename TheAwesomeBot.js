@@ -3,22 +3,15 @@ var Discord = require('discord.js');
 var bot = new Discord.Client();
 
 var helpCommands = require('./commands/helpText.js');
-
+var stream = require('./commands/stream');
 var jseval = require('./commands/jseval');
 
 var comment_multi_line = s => s.split('\n').map(line => '// ' + line).join('\n')
 
-// var data = {
-//   greeting: 'Hello',
-//   name: 'TheAwesomeBot',
-// };
-// var result = `${data.greeting}! I am ${data.name}.`;
-// console.log(result); // 'Hello! I am TheAwesomeBot.'
-
-var botcmd = '!bot',
-  helpcmd = 'help',
+var botcmd = '!bot';
+var helpcmd = 'help';
   // js_eval_cmd should end with a space
-  js_eval_cmd = 'jseval ';
+var js_eval_cmd = 'jseval ';
 
 var basicHelp = "Awesome is my name, don't wear it out! " +
   `Please type '${botcmd} ${helpcmd} *channel you need help with*' for more info.`;
@@ -34,11 +27,16 @@ var simpleResponses = Object.assign(helpObj,
 
 bot.on('message', function (message) {
   var key = message.content.toLowerCase().trim();
+
   if (simpleResponses[key])
     return bot.reply(message, simpleResponses[key]);
 
-  if (message.content.indexOf(botcmd) !== 0)
+  stream.checkAndTrackJoinMeLinks(bot, message);
+
+  if (key.indexOf(botcmd) !== 0)
     return;
+
+  stream.handleJoinMeCommands(bot, message);
 
   var js_eval_idx = message.content.indexOf(js_eval_cmd);
   if (js_eval_idx > 0) {
@@ -51,7 +49,6 @@ bot.on('message', function (message) {
     var output = "Executing javascript ```js\n" + 
       result.code + '\n' + buffer +
       '//=> ' + result.last_expression + '```';
-
     return bot.reply(message, output);
   }
 
