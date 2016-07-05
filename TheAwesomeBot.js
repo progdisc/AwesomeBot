@@ -6,11 +6,11 @@ var helpCommands = require('./commands/helpText.js');
 var stream = require('./commands/stream');
 var jseval = require('./commands/jseval');
 
-var comment_multi_line = s => s.split('\n').map(line => '// ' + line).join('\n')
+var comment_multi_line = s => s.split('\n').map(line => '// ' + line).join('\n');
 
 var botcmd = '!bot';
 var helpcmd = 'help';
-  // js_eval_cmd should end with a space
+// js_eval_cmd should end with a space
 var js_eval_cmd = 'jseval ';
 
 var basicHelp = "Awesome is my name, don't wear it out! " +
@@ -46,13 +46,12 @@ bot.on('message', function (message) {
       result.buffer.map(comment_multi_line).join('\n') + '\n' :
       '';
 
-    var output = "Executing javascript ```js\n" + 
+    var output = 'Executing javascript ```js\n' +
       result.code + '\n' + buffer +
       '//=> ' + result.last_expression + '```';
     return bot.reply(message, output);
   }
 
 });
-
 
 bot.loginWithToken('MTk4MjQ5NTI1ODU1NTE4NzIx.Cldcvw.xAQgYTI9IN_ACmCTBVydTQiM66k');

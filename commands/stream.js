@@ -1,4 +1,3 @@
-var helpCommands = require('./helpText');
 var channels = require('../channels');
 
 /*
@@ -13,13 +12,13 @@ var channels = require('../channels');
   - joinMeStreams is an object with the following schema:
 
     joinMeStreams: {
-      [channel] : [
-          { user: link },
-          { user: link },
-                .
-                .
-                .
-        ]
+      [channel] : {
+               [user]: link ,
+               [user]: link ,
+                    .
+                    .
+                    .
+        }
       }
     - joinMeStreams is an in-memory-object of sorts to keep track of streams.
 */
@@ -50,55 +49,21 @@ function checkAndTrackJoinMeLinks(bot, message) {
   //Don't add join.me links the bot itself posts
   if (bot.user.username == message.author.username) return;
 
-  if (message.content.indexOf('https://join.me/') !== -1) {
+  //if message contains a join me link
+  if (message.content.indexOf('https://join.me/') == 0) {
     var linkIndex = message.content.indexOf('https://join.me/');
     //assuming it's a one time link, this should work, will not WORK on personal links
     var link = message.content.substr(linkIndex, linkIndex + 27).trim().toLowerCase();
-
     var channel = message.channel.name;
-
     var response = `${message.author.mention()} is streaming from ${channel} at ${link}`;
 
-    var linksInObject = Object.keys(joinMeStreams).filter(key => joinMeStreams[key] === response);
-
-    if (linksInObject.length == 0) {
-      //add it to the object
-      //heres assuming they post the join.me in the right channel
-
-      if (joinMeStreams[channel]) {
-        var tempObj = {};
-        tempObj[message.author.username] = '\n' + response;
-
-        //Check if an existing user posted another new stream
-        var existing = joinMeStreams[channel].filter((objects) => {
-          if (objects) {
-            if (objects[message.author.username]) {
-              return true;
-            }
-          }
-
-          return false;
-        });
-
-        if (existing.length > 0) {
-          var existingKey = Object.keys(existing[0])[0];
-          joinMeStreams[channel].forEach((objects, index) => {
-            var username = Object.keys(objects)[0];
-            if (username === existingKey) {
-              //Update stream for existing user
-              joinMeStreams[channel][index][username] = '\n' + response;
-            }
-          });
-        } else {
-          joinMeStreams[channel].push(tempObj);
-        }
-      } else {
-        joinMeStreams[channel] = [];
-        var tempObj = {};
-        tempObj[message.author.username] = '\n' + response;
-        joinMeStreams[channel].push(tempObj);
-      }
+    if (joinMeStreams[channel]) {
+      joinMeStreams[channel][message.author.mention()] = response;
+    } else {
+      joinMeStreams[channel] = {};
+      joinMeStreams[channel][message.author.mention()] = response;
     }
+
   }
 }
 
@@ -113,46 +78,20 @@ function checkAndTrackJoinMeLinks(bot, message) {
 
 function handleJoinMeCommands(bot, message) {
   if (message.content.trim().toLowerCase().indexOf(removeStream) == 0) {
-    var channel = message.content.trim().toLowerCase().split(' ')[3];
-    var user = message.content.trim().toLowerCase().split(' ')[4];
-
-    var channelMatched = bot.channels.get('name', channel);
-    var userMatched = bot.users.get('name', user);
-
-    if (!channelMatched) {
-      return bot.reply(message, 'Channel argument in !bot remove [channel] [user] was invalid');
-    } else if (!userMatched) {
-      return bot.reply(message, 'User argument in !bot remove [channel] [user] was invalid');
-    } else {
-      var links = joinMeStreams[channel];
-
-      if (!links) return bot.reply(message, 'No streams for this channel! Nothing to remove!');
-
-      var linksRemoved = links.filter(link => {
-        var userKey = Object.keys(link)[0];
-        if (userKey != user) {
-          return link;
-        }
-      });
-
-      joinMeStreams[channel] = linksRemoved;
-
-      return bot.sendMessage(channelMatched, `Removed ${userMatched.mention()} from active streamers list`);
-    }
+    _handleDelete(bot, message);
   }
 
   streamCommands.forEach((command) => {
     if (message.content.trim().toLowerCase() == command.trim().toLowerCase()) {
       var channel = message.content.trim().toLowerCase().split(' ')[2];
-      var links = joinMeStreams[channel];
+      var obj = joinMeStreams[channel];
       var linkMessage = '';
-      if (links) {
-        if (links.length > 0) {
-          links.forEach((link) => {
-            var userStreaming = Object.keys(link)[0];
-            linkMessage += link[userStreaming] + '\n';
+      if (obj) {
+        if (Object.keys(obj).length > 0) {
+          Object.keys(obj).forEach((user) => {
+            linkMessage += joinMeStreams[channel][user] + '\n';
           });
-          return bot.reply(message, linkMessage);
+          return bot.sendMessage(message.channel, linkMessage);
         } else {
           return bot.reply(message, 'No streams for this channel.. be the first?');
         }
@@ -161,6 +100,23 @@ function handleJoinMeCommands(bot, message) {
       }
     }
   });
+}
+
+function _handleDelete(bot, message) {
+  var channel = message.content.trim().toLowerCase().split(' ')[3];
+  var user = message.content.trim().toLowerCase().split(' ')[4];
+
+  var links = joinMeStreams[channel];
+
+  if (!links) return bot.reply(message, 'No streams for this channel! Nothing to remove!');
+
+  if (joinMeStreams[channel][user]) {
+    delete joinMeStreams[channel][user];
+  } else {
+    return bot.sendMessage(channel, `No stream to delete.`);
+  }
+
+  return bot.sendMessage(bot.channels.get('name', channel), `Removed ${user} from active streamers list`);
 }
 
 module.exports = {
