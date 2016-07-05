@@ -7,13 +7,13 @@ var channels = require('../channels');
   Notes:
   - streamCommands is an array with the valid stream commands for the keys in channels.js:
     e.g ['!bot streams python', '!bot streams php'...]
+    e.g ['!bot streams remove [channel] [user]']
 
   How it works:
   - joinMeStreams is an object with the following schema:
 
     joinMeStreams: {
-      [channel] : {
-        streams: [
+      [channel] : [
           { user: link },
           { user: link },
                 .
@@ -21,14 +21,17 @@ var channels = require('../channels');
                 .
         ]
       }
-    }
     - joinMeStreams is an in-memory-object of sorts to keep track of streams.
 */
 
 var botcmd = '!bot';
 var streamcmd = 'streams';
 
+//!bot streams [channel]
 var streamCommands = Object.keys(channels).map(k => `${botcmd} ${streamcmd} ${k}`);
+
+//!bot streams remove [channel] [user]
+var removeStream = `${botcmd} ${streamcmd} remove`;
 
 //in memory object containing join.me streams
 var joinMeStreams = {};
@@ -101,6 +104,7 @@ function checkAndTrackJoinMeLinks(bot, message) {
 
 /**
  * Handles client response on '!bot streams [channel]'
+ * Handles client response on '!bot streams remove [channel] [user]'
  *
  * @param bot - bot client
  * @param message - message received
@@ -108,10 +112,39 @@ function checkAndTrackJoinMeLinks(bot, message) {
  */
 
 function handleJoinMeCommands(bot, message) {
+  if (message.content.trim().toLowerCase().indexOf(removeStream) == 0) {
+    var channel = message.content.trim().toLowerCase().split(' ')[3];
+    var user = message.content.trim().toLowerCase().split(' ')[4];
+
+    var channelMatched = bot.channels.get('name', channel);
+    var userMatched = bot.users.get('name', user);
+
+    if (!channelMatched) {
+      return bot.reply(message, 'Channel argument in !bot remove [channel] [user] was invalid');
+    } else if (!userMatched) {
+      return bot.reply(message, 'User argument in !bot remove [channel] [user] was invalid');
+    } else {
+      var links = joinMeStreams[channel];
+
+      if (!links) return bot.reply(message, 'No streams for this channel! Nothing to remove!');
+
+      var linksRemoved = links.filter(link => {
+        var userKey = Object.keys(link)[0];
+        if (userKey != user) {
+          return link;
+        }
+      });
+
+      joinMeStreams[channel] = linksRemoved;
+
+      return bot.sendMessage(channelMatched, `Removed ${userMatched.mention()} from active streamers list`);
+    }
+  }
+
   streamCommands.forEach((command) => {
     if (message.content.trim().toLowerCase() == command.trim().toLowerCase()) {
-      var lang = message.content.trim().toLowerCase().split(' ')[2];
-      var links = joinMeStreams[lang];
+      var channel = message.content.trim().toLowerCase().split(' ')[2];
+      var links = joinMeStreams[channel];
       var linkMessage = '';
       if (links) {
         if (links.length > 0) {
@@ -120,6 +153,8 @@ function handleJoinMeCommands(bot, message) {
             linkMessage += link[userStreaming] + '\n';
           });
           return bot.reply(message, linkMessage);
+        } else {
+          return bot.reply(message, 'No streams for this channel.. be the first?');
         }
       } else {
         return bot.reply(message, 'No streams for this channel.. be the first?');
