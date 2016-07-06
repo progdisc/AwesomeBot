@@ -27,7 +27,7 @@ var botcmd = '!bot';
 var streamcmd = 'stream';
 
 //!bot new stream [topic]
-var createStreamChannel = `${botcmd} new ${streamcmd}`;
+var createStreamChannel = `${botcmd} create ${streamcmd}`;
 
 //!bot scrap stream [user]
 var removeStream = `${botcmd} scrap ${streamcmd}`;
