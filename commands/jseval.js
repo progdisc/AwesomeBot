@@ -33,4 +33,21 @@ function safer_eval(code) {
   return {code, buffer, last_expression, error, ctx}
 }
 
-module.exports = safer_eval
+function handleJSEval(bot, message, cmd_args) {
+  var comment_multi_line = s => s.split('\n').map(line => '// ' + line).join('\n');
+
+  var code = cmd_args;
+  var result = safer_eval(code);
+  var buffer = result.buffer.length ?
+    result.buffer.map(comment_multi_line).join('\n') + '\n' :
+      '';
+
+      var output = 'executing JavaScript... ```js\n' +
+        result.code + '\n' + buffer +
+          '//=> ' + result.last_expression + '```';
+          return bot.reply(message, output);
+}
+
+module.exports = {
+  handleJSEval: handleJSEval
+}

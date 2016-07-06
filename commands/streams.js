@@ -1,3 +1,4 @@
+var Settings = require('../settings');
 var channels = require('../channels');
 
 /*
@@ -23,14 +24,13 @@ var channels = require('../channels');
     - joinMeStreams is an in-memory-object of sorts to keep track of streams.
 */
 
-var botcmd = '!bot';
 var streamcmd = 'streams';
 
 //!bot streams [channel]
-var streamCommands = Object.keys(channels).map(k => `${botcmd} ${streamcmd} ${k}`);
+var streamCommands = Object.keys(channels).map(k => `${Settings.bot_cmd} ${streamcmd} ${k}`);
 
 //!bot streams remove [channel] [user]
-var removeStream = `${botcmd} ${streamcmd} remove`;
+var removeStream = `${Settings.bot_cmd} ${streamcmd} remove`;
 
 //in memory object containing join.me streams
 var joinMeStreams = {};
@@ -46,9 +46,6 @@ var joinMeStreams = {};
  */
 
 function checkAndTrackJoinMeLinks(bot, message) {
-  //Don't add join.me links the bot itself posts
-  if (bot.user.username == message.author.username) return;
-
   //if message contains a join me link
   if (message.content.indexOf('https://join.me/') == 0) {
     var linkIndex = message.content.indexOf('https://join.me/');
@@ -57,13 +54,10 @@ function checkAndTrackJoinMeLinks(bot, message) {
     var channel = message.channel.name;
     var response = `${message.author.mention()} is streaming from ${channel} at ${link}`;
 
-    if (joinMeStreams[channel]) {
-      joinMeStreams[channel][message.author.mention()] = response;
-    } else {
+    if (!joinMeStreams[channel]) {
       joinMeStreams[channel] = {};
-      joinMeStreams[channel][message.author.mention()] = response;
     }
-
+    joinMeStreams[channel][message.author.mention()] = response;
   }
 }
 
@@ -119,8 +113,11 @@ function _handleDelete(bot, message) {
   return bot.sendMessage(bot.channels.get('name', channel), `Removed ${user} from active streamers list`);
 }
 
+function handleStreams(bot, message, cmd_args) {
+  checkAndTrackJoinMeLinks(bot, message);
+  handleJoinMeCommands(bot, cmd_args);
+}
+
 module.exports = {
-  checkAndTrackJoinMeLinks: checkAndTrackJoinMeLinks,
-  handleJoinMeCommands: handleJoinMeCommands,
-  streamCommands: streamCommands,
+  handleStreams: handleStreams
 };
