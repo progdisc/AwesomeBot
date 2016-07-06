@@ -8,14 +8,18 @@ function handleHelp(bot, message, cmd_args) {
   helpObj[Settings.bot_cmd + ' help'] = helpObj[Settings.bot_cmd] = basicHelp;
 
   // basic help commands
-  var simpleResponses = Object.assign(helpObj,
-                                      Object.keys(helpCommands)
-                                      .map(k => [`${Settings.bot_cmd} help ${k}`, helpCommands[k]])
-                                      .reduce((obj, row) => (obj[row[0]] = row[1], obj), {}));
+  var simpleResponses = Object.assign(
+    helpObj,
+    Object.keys(helpCommands)
+      .map(k => [`${Settings.bot_cmd} help ${k}`, helpCommands[k]])
+      .reduce((obj, row) => (obj[row[0]] = row[1], obj), {})
+  );
 
-                                      if (simpleResponses[message.cleanContent]) {
-                                        return bot.reply(message, simpleResponses[message.cleanContent]);
-                                      }
+  if (simpleResponses[message.cleanContent]) {
+    return bot.reply(message, simpleResponses[message.cleanContent]);
+  } else {
+    return bot.reply(message, "I don't know anything about that. If you have a suggestion, let us know!");
+  }
 }
 
 module.exports = {
