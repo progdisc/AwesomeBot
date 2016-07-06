@@ -29,8 +29,8 @@ var streamcmd = 'stream';
 //!bot new stream [topic]
 var createStreamChannel = `${botcmd} create ${streamcmd}`;
 
-//!bot scrap stream [user]
-var removeStream = `${botcmd} scrap ${streamcmd}`;
+//!bot remove stream [topic] [user]
+var removeStream = `${botcmd} remove ${streamcmd}`;
 
 //!bot list streams
 var listStreams = `${botcmd} list streams`;
@@ -54,37 +54,32 @@ function _isCommandInMessage(message, command) {
 }
 
 function _handleDelete(bot, message) {
-  var topic = message.content.trim().toLowerCase().split(' ')[3];
-  var user = message.content.trim().toLowerCase().split(' ')[4];
-  var links = joinMeStreams[topic];
+  var user = message.content.trim().split(' ')[3];
 
-  if (!links) {
-    return bot.reply(message,
-      'No streams for this topic! Nothing to remove!');
-  }
+  var topics = Object.keys(joinMeStreams);
 
-  if (joinMeStreams[topic][user]) {
-    var channelToDelete = joinMeStreams[topic][user].channel;
+  topics.forEach(topic => {
+    if (joinMeStreams[topic][user]) {
 
-    if (Object.keys(joinMeStreams[topic]).length == 1) {
-      //If there is only 1 stream in the topic, delete the topic
-      delete joinMeStreams[topic];
-    } else {
-      delete joinMeStreams[topic][user];
-    }
+      var channelToDelete = joinMeStreams[topic][user].channel;
 
-    //delete the channel
+      if (Object.keys(joinMeStreams[topic]).length == 1) {
+        delete joinMeStreams[topics];
+      } else {
+        delete joinMeStreams[topics][user];
+      }
 
-    bot.deleteChannel(channelToDelete, (err) => {
-      if (err) return bot.sendMessage(message.channel,
+      bot.deleteChannel(channelToDelete, (err) => {
+        if (err) return bot.sendMessage(message.channel,
         'Sorry, could not delete channel');
-    });
+      });
 
-    return bot.sendMessage(message.channel,
+      return bot.sendMessage(message.channel,
       `Removed ${user} from active streamers list and deleted ${channelToDelete.name}`);
-  }
+    }
+  });
 
-  return bot.sendMessage(topic, `No stream to delete.`);
+  return bot.reply(message, 'No stream to delete');
 }
 
 function _handleCreateStreamChannel(bot, message) {
@@ -92,16 +87,7 @@ function _handleCreateStreamChannel(bot, message) {
 
   var topic = messageString.split(' ')[3];
   var link = messageString.split(' ')[4];
-
-  if (link.indexOf('http') == -1 || link.indexOf('https://') == -1) {
-    return bot.reply(message,
-      'A valid link must be supplied `!bot new stream [topic] [link] [optional_description]`');
-  }
-
-  var descriptionStartsFrom = messageString.indexOf(messageString.split(' ')[5]);
-  var descriptionEndsTo = messageString.length;
-
-  var description = messageString.substring(descriptionStartsFrom, descriptionEndsTo);
+  var user = messageString.split(' ')[5];
 
   if (!topic) {
     return bot.reply(message, 'Please provide a topic');
@@ -111,41 +97,42 @@ function _handleCreateStreamChannel(bot, message) {
     return bot.reply(message, 'Please provide a link');
   }
 
+  if (link.indexOf('http') == -1 || link.indexOf('https://') == -1) {
+    return bot.reply(message,
+      'A valid http/https link must be supplied as 2nd arg `!bot create stream [topic] [link] [optional_user]`');
+  }
+
   var channelFormat = `${message.author.username}_${topic}`;
+  if (user) {
+    var userId = user.substr(2, 19);
+    var otherUser = bot.client.users.get('id', userId);
+    channelFormat = `${otherUser.author.username}_${topic}`;
+  } else {
+    user = message.author.mention();
+  }
 
   var defaultDescription =
     `${message.author.mention()} is streaming about ${topic}`;
 
-  var doesChannelExist = bot.channels.get('name', channelFormat);
+  _putStreamInObject(topic, user, link, defaultDescription);
 
-  //create the channel
-  bot.createChannel(message.server, channelFormat, (err, channel) => {
-    if (err) return bot.reply(message, 'Could not create the channel, sorry');
+  var channelExists =
+    typeof bot.channels.get('name', channelFormat) != 'undefined';
 
-    //add it to the streams object
-    var user = message.author.mention();
+  if (channelExists) {
+    joinMeStreams[topic][user].channel = bot.channels.get('name', channelFormat);
+    return bot.sendMessage(message.channel, `Channel already exists.. but updated stream link`);
+  } else {
+    bot.createChannel(message.server, channelFormat, (err, channel) => {
+        if (err) return bot.reply(message, 'Could not create the channel, sorry');
 
-    if (!joinMeStreams[topic]) {
-      joinMeStreams[topic] = {};
-    }
+        user = message.author.mention();
 
-    joinMeStreams[topic][user] = {
-      link: '',
-      description: '',
-      channel: '',
-    };
+        joinMeStreams[topic][user].channel = channel;
 
-    joinMeStreams[topic][user].link = link;
-    joinMeStreams[topic][user].channel = channel;
-
-    if (description) {
-      joinMeStreams[topic][user].description = description;
-    } else {
-      joinMeStreams[topic][user].description = defaultDescription;
-    }
-
-    return bot.sendMessage(message.channel, `Created ${channel.mention()}!`);
-  });
+        return bot.sendMessage(message.channel, `Created ${channel.mention()}!`);
+      });
+  }
 }
 
 function _listStreams(bot, message) {
@@ -174,6 +161,21 @@ function _listStreams(bot, message) {
   });
 
   return bot.sendMessage(message.channel, buildMessage);
+}
+
+function _putStreamInObject(topic, user, link, description) {
+  if (!joinMeStreams[topic]) {
+    joinMeStreams[topic] = {};
+  }
+
+  joinMeStreams[topic][user] = {
+    link: '',
+    description: '',
+    channel: '',
+  };
+
+  joinMeStreams[topic][user].link = link;
+  joinMeStreams[topic][user].description = description;
 }
 
 module.exports = {
