@@ -116,8 +116,7 @@ function _handleCreateStreamChannel(bot, message) {
 
   _putStreamInObject(topic, user, link, defaultDescription);
 
-  var channelExists =
-    typeof bot.channels.get('name', channelFormat) != 'undefined';
+  var channelExists = bot.channels.get('name', channelFormat);
 
   if (channelExists) {
     joinMeStreams[topic][user].channel = bot.channels.get('name', channelFormat);
