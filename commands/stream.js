@@ -99,7 +99,7 @@ function _handleCreateStreamChannel(bot, message) {
   }
 
   var descriptionStartsFrom = messageString.indexOf(messageString.split(' ')[5]);
-  var descriptionEndsTo = message.length;
+  var descriptionEndsTo = messageString.length;
 
   var description = messageString.substring(descriptionStartsFrom, descriptionEndsTo);
 
