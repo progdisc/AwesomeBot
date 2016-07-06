@@ -31,8 +31,6 @@ bot.on('message', function (message) {
   if (simpleResponses[key])
     return bot.reply(message, simpleResponses[key]);
 
-  stream.checkAndTrackJoinMeLinks(bot, message);
-
   if (key.indexOf(botcmd) !== 0)
     return;
 
