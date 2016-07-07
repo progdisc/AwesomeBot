@@ -2,13 +2,13 @@ var Discord = require('discord.js');
 var Settings = require('./settings.json');
 
 var Help = require('./commands/help.js');
-var Streams = require('./commands/streams.js');
+var Stream = require('./commands/stream.js');
 var JSEval = require('./commands/jseval.js');
 
 var cmds = {
-  "help" : Help.handleHelp,
-  "streams": Streams.handleStreams,
-  "jseval": JSEval.handleJSEval,
+  help: Help.handleHelp,
+  stream: Stream.handleStreams,
+  jseval: JSEval.handleJSEval,
 };
 
 var bot = new Discord.Client();
