@@ -50,7 +50,7 @@ function processVote(type, bot, message, server, user) {
   if (!voting) {
     // sets a timeout for this voting
     var timeoutClj = function() {
-      bot.sendMessage(message.channel, `Vote to ${type} ${user.mention()} has timed out. Whew!`);
+      bot.sendMessage(message.channel, `Vote to ${type} ${user.mention()} has timed out. Phew!`);
       delete currentVotes[type][user.username];
     };
     var timeoutObj = setTimeout(timeoutClj, Settings.voting.timeout_in_minutes * 1000 * 60);
