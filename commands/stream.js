@@ -1,20 +1,20 @@
+var Settings = require('../settings');
+
 /*
   This module is meant to handle the command '!bot streams #channel'
 
   Notes:
-  - streamCommands is an array with the valid stream commands
-    for the keys in channels.js:
-
-    e.g ['!bot stream python', '!bot streams php'...]
-    e.g [`!bot create stream [user] [topic]`]
+  - streamCommands is an array with the valid stream commands for the keys in channels.js:
+    e.g ['!bot streams python', '!bot streams php'...]
+    e.g ['!bot streams remove [channel] [user]']
 
   How it works:
   - joinMeStreams is an object with the following schema:
 
     joinMeStreams: {
       [channel] : {
-               [user]: { link, description, channel } ,
-               [user]: { link, description, channel } ,
+               [user]: link ,
+               [user]: link ,
                     .
                     .
                     .
@@ -23,17 +23,17 @@
     - joinMeStreams is an in-memory-object of sorts to keep track of streams.
 */
 
-var botcmd = '!bot';
 var streamcmd = 'stream';
+var { bot_cmd } = Settings;
 
-//!bot new stream [topic]
-var createStreamChannel = `${botcmd} create ${streamcmd}`;
+//!bot stream create [topic] [link]
+var createStreamChannel = `${bot_cmd} ${streamcmd} create`;
 
-//!bot remove stream [topic] [user]
-var removeStream = `${botcmd} remove ${streamcmd}`;
+//!bot stream remove [user]
+var removeStream = `${bot_cmd} ${streamcmd} remove`;
 
-//!bot list streams
-var listStreams = `${botcmd} list streams`;
+//!bot stream list
+var listStreams = `${bot_cmd} ${streamcmd} list`;
 
 //in memory object containing join.me streams
 var joinMeStreams = {};
@@ -79,7 +79,6 @@ function _handleDelete(bot, message) {
     }
   });
 
-  return bot.reply(message, 'No stream to delete');
 }
 
 function _handleCreateStreamChannel(bot, message) {
@@ -89,12 +88,8 @@ function _handleCreateStreamChannel(bot, message) {
   var link = messageString.split(' ')[4];
   var user = messageString.split(' ')[5];
 
-  if (!topic) {
-    return bot.reply(message, 'Please provide a topic');
-  }
-
-  if (!link) {
-    return bot.reply(message, 'Please provide a link');
+  if (!topic || !link) {
+    return bot.reply(message, 'Err, please provide link and topic `!bot stream create [topic] [link]`');
   }
 
   if (link.indexOf('http') == -1 || link.indexOf('https://') == -1) {
@@ -177,6 +172,10 @@ function _putStreamInObject(topic, user, link, description) {
   joinMeStreams[topic][user].description = description;
 }
 
+function handleStreams(bot, message, cmd_args) {
+  handleJoinMeCommands(bot, message);
+}
+
 module.exports = {
-  handleJoinMeCommands: handleJoinMeCommands,
+  handleStreams: handleStreams,
 };
