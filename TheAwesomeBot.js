@@ -55,4 +55,5 @@ bot.on('ready', function () {
 })
 
 console.log('Connecting...')
-bot.loginWithToken(Settings.api_token);
+bot.loginWithToken(Settings.api_token || process.env.DISCORD_TOKEN);
+
