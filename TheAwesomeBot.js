@@ -11,7 +11,7 @@ var cmds = {
   "jseval": JSEval.handleJSEval,
 };
 
-var bot = new Discord.Client();
+var bot = new Discord.Client({autoReconnect: true});
 
 // save the RE as they're expensive to create
 var cmd_re = new RegExp(`^${Settings.bot_cmd} (${Object.keys(cmds).join('|')})(.*) *`, 'i');
@@ -35,4 +35,18 @@ bot.on('message', function (message) {
   cmds[cmd](bot, message, cmd_args);
 });
 
+bot.on('disconnected', function () {
+  console.warn('Bot has been disconnected from server...')
+})
+
+bot.on('error', function (e) {
+  console.error("error: ", e)
+  console.error(e.trace)
+})
+
+bot.on('ready', function () {
+  console.log('Connected to discord server')
+})
+
+console.log('Connecting...')
 bot.loginWithToken(Settings.api_token);
