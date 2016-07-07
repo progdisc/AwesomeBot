@@ -5,12 +5,14 @@ var Help = require('./commands/help.js');
 var Stream = require('./commands/stream.js');
 var JSEval = require('./commands/jseval.js');
 var Vote = require('./commands/vote.js');
+var Uptime = require('./commands/uptime.js');
 
 var cmds = {
   help: Help.handleHelp,
   stream: Stream.handleStreams,
   jseval: JSEval.handleJSEval,
-  vote: Vote.handleVote
+  vote: Vote.handleVote,
+  uptime: Uptime.handleUptime
 };
 
 var bot = new Discord.Client({autoReconnect: true});
