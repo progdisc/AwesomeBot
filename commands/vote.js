@@ -105,7 +105,7 @@ function handleVote(bot, message) {
   // roles validation
   var userRoles = getUserRoles(server, user);
   if (setIntersection(userRoles, immuneRoles).size > 0) {
-    bot.reply(message, ` members of the following groups are immune: ${[...immuneRoles].join(', ')}`);
+    bot.sendMessage(message.channel, `I'm afraid I can't do that, ${message.author.mention()}...`);
     return;
   }
 
