@@ -27,8 +27,12 @@ bot.on('message', function (message) {
   var cmd_match = message.cleanContent.match(cmd_re);
 
   // not a known command
-  if (!cmd_match)
+  if (!cmd_match) {
+    if (message.content.indexOf(Settings.bot_cmd) === 0) {
+      Help.handleHelp(bot, message, cmd_args);
+    }
     return;
+  }
 
   // process command
   var cmd = cmd_match[1];
