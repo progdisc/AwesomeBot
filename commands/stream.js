@@ -24,7 +24,7 @@ var Settings = require('../settings');
 */
 
 var streamcmd = 'stream';
-var { bot_cmd } = Settings;
+var bot_cmd = Settings.bot_cmd;
 
 //!bot stream create [topic] [link]
 var createStreamChannel = `${bot_cmd} ${streamcmd} create`;
