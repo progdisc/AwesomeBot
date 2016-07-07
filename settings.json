@@ -3,7 +3,8 @@
   "api_token": "",
   "voting": {
     "immuneRoles": ["Admins", "Mods", "Pros"],
-    "voteThreshold": 3
+    "voteThreshold": 3,
+    "timeout_in_minutes": 5
   }
 }
 

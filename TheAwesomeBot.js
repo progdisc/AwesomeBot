@@ -4,11 +4,13 @@ var Settings = require('./settings.json');
 var Help = require('./commands/help.js');
 var Stream = require('./commands/stream.js');
 var JSEval = require('./commands/jseval.js');
+var Vote = require('./commands/vote.js');
 
 var cmds = {
   help: Help.handleHelp,
   stream: Stream.handleStreams,
   jseval: JSEval.handleJSEval,
+  vote: Vote.handleVote
 };
 
 var bot = new Discord.Client({autoReconnect: true});
