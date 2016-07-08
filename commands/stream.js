@@ -115,17 +115,27 @@ function _handleCreateStreamChannel(bot, message) {
 
   if (channelExists) {
     joinMeStreams[topic][user].channel = bot.channels.get('name', channelFormat);
+    joinMeStreams[topic][user].link = link;
+    bot.setChannelTopic(link, (err) => {
+      if (err) {
+        return bot.reply(message,
+          'There was an error setting the existings channel topic!');
+      }
+    });
     return bot.sendMessage(message.channel, `Channel already exists.. but updated stream link`);
   } else {
-    bot.createChannel(message.server, channelFormat, (err, channel) => {
-        if (err) return bot.reply(message, 'Could not create the channel, sorry');
+    return _createChannel(channelFormat, bot, message, topic, user)
 
-        user = message.author.mention();
+          .then((createdChannel) => _setTopicToLink(createdChannel,
+            link, bot, topic, user))
 
-        joinMeStreams[topic][user].channel = channel;
+          .then((channelWithTopic) => {
+            return bot.reply(message.channel, `Created ${channelWithTopic.mention()}!`);
+          })
 
-        return bot.sendMessage(message.channel, `Created ${channel.mention()}!`);
-      });
+          .catch((errMessage) => {
+            return bot.reply(message.channel, `Sorry, could not create channel`);
+          });
   }
 }
 
@@ -156,6 +166,26 @@ function _listStreams(bot, message) {
 
   return bot.sendMessage(message.channel, buildMessage);
 }
+
+function _createChannel(title, bot, message, topic, user) {
+  return new Promise((resolve, reject) => {
+    bot.createChannel(message.server, title, (err, channel) => {
+        if (err) reject(new Error('An error occured in creating a channel'));
+        joinMeStreams[topic][user].channel = channel;
+        resolve(channel);
+      });
+  });
+};
+
+function _setTopicToLink(channel, link, bot, topic, user) {
+  return new Promise((resolve, reject) => {
+    bot.setChannelTopic(channel, link, (err) => {
+      if (err) reject(new Error('An error occured in setting a topic to the channel'));
+      joinMeStreams[topic][user].channel = channel;
+      resolve(channel);
+    });
+  });
+};
 
 function _putStreamInObject(topic, user, link, description) {
   if (!joinMeStreams[topic]) {
