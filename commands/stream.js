@@ -89,12 +89,12 @@ function _handleCreateStreamChannel(bot, message) {
   var user = messageString.split(' ')[5];
 
   if (!topic || !link) {
-    return bot.reply(message, 'Err, please provide link and topic `!bot stream create [topic] [link]`');
+    return bot.reply(message, 'Err, please provide link and topic `!bot stream create [topic] [link] [optional_user]`');
   }
 
   if (link.indexOf('http') == -1 && link.indexOf('https://') == -1) {
     return bot.reply(message,
-      'A valid http/https link must be supplied as 2nd arg `!bot create stream [topic] [link] [optional_user]`');
+      'A valid http/https link must be supplied as 2nd arg `!bot stream create [topic] [link] [optional_user]`');
   }
 
   var channelFormat = `${message.author.username}_${topic}`;
