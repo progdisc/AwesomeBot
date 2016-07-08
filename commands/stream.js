@@ -92,7 +92,7 @@ function _handleCreateStreamChannel(bot, message) {
     return bot.reply(message, 'Err, please provide link and topic `!bot stream create [topic] [link]`');
   }
 
-  if (link.indexOf('http') == -1 || link.indexOf('https://') == -1) {
+  if (link.indexOf('http') == -1 && link.indexOf('https://') == -1) {
     return bot.reply(message,
       'A valid http/https link must be supplied as 2nd arg `!bot create stream [topic] [link] [optional_user]`');
   }
@@ -118,6 +118,7 @@ function _handleCreateStreamChannel(bot, message) {
     joinMeStreams[topic][user].link = link;
     bot.setChannelTopic(channelExists, link, (err) => {
       if (err) {
+        console.error(err);
         return bot.reply(message,
           'There was an error setting the existings channel topic!');
       }
