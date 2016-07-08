@@ -114,9 +114,9 @@ function _handleCreateStreamChannel(bot, message) {
   var channelExists = bot.channels.get('name', channelFormat);
 
   if (channelExists) {
-    joinMeStreams[topic][user].channel = bot.channels.get('name', channelFormat);
+    joinMeStreams[topic][user].channel = channelExists;
     joinMeStreams[topic][user].link = link;
-    bot.setChannelTopic(channel, link, (err) => {
+    bot.setChannelTopic(channelExists, link, (err) => {
       if (err) {
         return bot.reply(message,
           'There was an error setting the existings channel topic!');
