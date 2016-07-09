@@ -2,8 +2,8 @@
   "bot_cmd": "!bot",
   "api_token": "",
   "voting": {
-    "immuneRoles": ["Admins", "Mods", "Pros"],
-    "voteThreshold": 3,
+    "immuneRoles": ["Admins", "Mods"],
+    "voteThreshold": 5,
     "timeout_in_minutes": 5
   }
 }
