@@ -1,25 +1,27 @@
-var start_time = Date.now()
+'use strict'
 
-var magnitudes = [
+const start_time = Date.now()
+
+const magnitudes = [
   ['days', 1000 * 60 * 60 * 24],
   ['hours', 1000 * 60 * 60],
   ['minutes', 1000 * 60],
   ['seconds', 1000],
 ]
 
-function getUptime(diff) {
-  return magnitudes.map(function(m) {
-    if (diff / m[1] > 1) {
-      var mdiff = diff / m[1] | 0
-      diff -= mdiff * m[1]
-      return mdiff + ' ' + m[0]
+const LABEL = 0
+const VALUE = 1
+
+const getUptime = diff =>
+  magnitudes.map(function(m) {
+    if (diff / m[VALUE] > 1) {
+      let mdiff = diff / m[VALUE] | 0
+      diff -= mdiff * m[VALUE]
+      return mdiff + ' ' + m[LABEL]
     }
   }).filter(x => !!x).join(', ')
-}
 
-function handleUptime(bot, message, cmd_args) {
-  var diff = Date.now() - start_time;
-  return bot.reply(message, 'uptime: ' + getUptime(diff));
-}
+const handleUptime = (bot, message, cmd_args) =>
+  bot.reply(message, 'uptime: ' + getUptime(Date.now() - start_time))
 
 module.exports = {handleUptime, getUptime}

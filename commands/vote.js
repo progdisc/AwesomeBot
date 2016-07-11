@@ -3,7 +3,7 @@ var Settings = require('../settings.json');
 var immuneRoles = new Set(Settings.voting.immuneRoles);
 var voteThreshold = Settings.voting.voteThreshold;
 
-var botcmd = '!bot';
+var botcmd = Settings.bot_cmd;
 var votecmd = 'vote';
 
 var voteTypes = {
