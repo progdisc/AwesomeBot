@@ -1,22 +1,24 @@
-var Settings = require('../settings.json');
-var helpCommands = require('./helpText.js');
+'use strict'
+const Settings = require('../settings.json');
+const helpCommands = require('./helpText.js');
 
-var basicHelp = "Awesome is my name, don't wear it out! " +
+const basicHelp = "Awesome is my name, don't wear it out! " +
   `Please type '${Settings.bot_cmd} help *channel you need help with*' for more info.`;
 
-var helpObj = {};
+const helpObj = {};
 helpObj[Settings.bot_cmd + ' help'] = helpObj[Settings.bot_cmd] = basicHelp;
 
 // basic help commands
-var simpleResponses = Object.assign(
+const simpleResponses = Object.assign(
   helpObj,
   Object.keys(helpCommands)
     .map(k => [`${Settings.bot_cmd} help ${k}`, helpCommands[k]])
     .reduce((obj, row) => (obj[row[0]] = row[1], obj), {}))
 
 function handleHelp(bot, message, cmd_args) {
-  return bot.reply(message, simpleResponses[message.cleanContent.toLowerCase()] ?
-    simpleResponses[message.cleanContent.toLowerCase()] :
+  let response = simpleResponses[message.cleanContent.toLowerCase()]
+
+  return bot.reply(message, response ? response :
     "I don't know anything about that. If you have a suggestion, let us know!")
 }
 

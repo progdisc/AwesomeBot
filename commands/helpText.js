@@ -1,13 +1,16 @@
-var fs = require('fs')
+'use strict'
 
-var helptext = fs.readFileSync(__dirname + '/helpText.txt', 'utf8').split(/\n{3,}/g)
+const helptext = require('fs')
+	.readFileSync(__dirname + '/helpText.txt', 'utf8')
+	.split(/\n{3,}/g)
 
 helptext.forEach(function(txt) {
-  var result = txt.trim().match(/^:([^:\n]+):\n/)
+  let result = txt.trim().match(/^:([^:\n]+):\n/)
   if (result) {
     module.exports[result[1]] = txt.substring(result[0].length)
   } else {
-    var alias = txt.trim().match(/^:([^:\n]+): = ([^\n]+)$/)
-    module.exports[alias[1]] = module.exports[alias[2]]
+    let alias = txt.trim().match(/^:([^:\n]+): = ([^\n]+)$/)
+    if (alias)
+    	module.exports[alias[1]] = module.exports[alias[2]]
   }
 })
