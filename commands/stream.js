@@ -38,23 +38,34 @@ var listStreams = `${bot_cmd} ${streamcmd} list`;
 //in memory object containing join.me streams
 var joinMeStreams = {};
 
-function handleJoinMeCommands(bot, message) {
-  if (_isCommandInMessage(message, removeStream)) {
-    _handleDelete(bot, message);
-  } else if (_isCommandInMessage(message, createStreamChannel)) {
-    _handleCreateStreamChannel(bot, message);
-  } else if (_isCommandInMessage(message, listStreams)) {
-    _listStreams(bot, message);
+function handleJoinMeCommands(bot, message, cmd_args) {
+  var cmd = cmd_args.split(' ')[0];
+
+  switch (cmd) {
+    case 'create': {
+      _handleCreateStreamChannel(bot, message, cmd_args);
+      break;
+    }
+
+    case 'remove': {
+      _handleRemove(bot, message, cmd_args);
+      break;
+    }
+
+    case 'list': {
+      _listStreams(bot, message);
+      break;
+    }
   }
 }
 
-function _isCommandInMessage(message, command) {
-  var messageString = message.content.trim().toLowerCase();
-  return (messageString.indexOf(command) == 0) ? true : false;
-}
+function _handleRemove(bot, message, args) {
+  var mentionString = args.split(' ')[1];
 
-function _handleDelete(bot, message) {
-  var user = message.content.trim().split(' ')[3];
+  var extractNameFromMention = mentionString.substr(1,
+    mentionString.indexOf('#') - 1);
+
+  var user = bot.users.get('name', extractNameFromMention).mention();
 
   var topics = Object.keys(joinMeStreams);
 
@@ -76,17 +87,17 @@ function _handleDelete(bot, message) {
 
       return bot.sendMessage(message.channel,
       `Removed ${user} from active streamers list and deleted ${channelToDelete.name}`);
+    } else {
+      return bot.sendMessage(message.channel, `Could not find ${user}`);
     }
   });
 
 }
 
-function _handleCreateStreamChannel(bot, message) {
-  var messageString = message.content.toLowerCase().trim();
-
-  var topic = messageString.split(' ')[3];
-  var link = messageString.split(' ')[4];
-  var user = messageString.split(' ')[5];
+function _handleCreateStreamChannel(bot, message, args) {
+  var topic = args.split(' ')[1];
+  var link = args.split(' ')[2];
+  var user = args.split(' ')[3];
 
   if (!topic || !link) {
     return bot.reply(message, 'Err, please provide link and topic `!bot stream create [topic] [link] [optional_user]`');
@@ -98,11 +109,16 @@ function _handleCreateStreamChannel(bot, message) {
   }
 
   var channelFormat = `${message.author.username}_${topic}`;
+
   if (user) {
-    var userId = user.substr(2, 19);
-    var otherUser = bot.client.users.get('id', userId);
-    channelFormat = `${otherUser.author.username}_${topic}`;
+    //Creating a channel for someone else
+    var indexOfhash = user.indexOf('#');
+    var otherUsername = user.substr(1, indexOfhash - 1).trim();
+    var otherUser = bot.users.get('name', otherUsername);
+    channelFormat = `${otherUser.username}_${topic}`;
+    user = otherUser.mention();
   } else {
+    //Creating a channel for you
     user = message.author.mention();
   }
 
@@ -111,12 +127,12 @@ function _handleCreateStreamChannel(bot, message) {
 
   _putStreamInObject(topic, user, link, defaultDescription);
 
-  var channelExists = bot.channels.get('name', channelFormat);
+  var existingChannel = bot.channels.get('name', channelFormat);
 
-  if (channelExists) {
-    joinMeStreams[topic][user].channel = channelExists;
+  if (existingChannel) {
+    joinMeStreams[topic][user].channel = existingChannel;
     joinMeStreams[topic][user].link = link;
-    bot.setChannelTopic(channelExists, link, (err) => {
+    bot.setChannelTopic(existingChannel, link, (err) => {
       if (err) {
         console.error(err);
         return bot.reply(message,
@@ -194,17 +210,16 @@ function _putStreamInObject(topic, user, link, description) {
   }
 
   joinMeStreams[topic][user] = {
-    link: '',
-    description: '',
+    link: link,
+    description: description,
     channel: '',
   };
 
-  joinMeStreams[topic][user].link = link;
-  joinMeStreams[topic][user].description = description;
+  console.log(`Key: ${topic}, User Key: ${user}`);
 }
 
 function handleStreams(bot, message, cmd_args) {
-  handleJoinMeCommands(bot, message);
+  handleJoinMeCommands(bot, message, cmd_args);
 }
 
 module.exports = {
