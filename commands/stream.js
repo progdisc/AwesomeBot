@@ -24,6 +24,7 @@ var Settings = require('../settings');
 */
 
 var streamcmd = 'stream';
+
 var bot_cmd = Settings.bot_cmd;
 
 //!bot stream create [topic] [link]
@@ -60,12 +61,13 @@ function handleJoinMeCommands(bot, message, cmd_args) {
 }
 
 function _handleRemove(bot, message, args) {
-  var mentionString = args.split(' ')[1];
+  var [, mentionString] = args.split(' ');
 
-  var extractNameFromMention = mentionString.substr(1,
-    mentionString.indexOf('#') - 1);
+  //mentionString e.g @[some_username]#02123
+  //username = "some_username"
+  var username = _extractUsernameFromMention(mentionString);
 
-  var user = bot.users.get('name', extractNameFromMention).mention();
+  var user = bot.users.get('name', username).mention();
 
   var topics = Object.keys(joinMeStreams);
 
@@ -95,9 +97,7 @@ function _handleRemove(bot, message, args) {
 }
 
 function _handleCreateStreamChannel(bot, message, args) {
-  var topic = args.split(' ')[1];
-  var link = args.split(' ')[2];
-  var user = args.split(' ')[3];
+  var [, topic, link, user] = args.split(' ');
 
   if (!topic || !link) {
     return bot.reply(message, 'Err, please provide link and topic `!bot stream create [topic] [link] [optional_user]`');
@@ -112,13 +112,14 @@ function _handleCreateStreamChannel(bot, message, args) {
 
   if (user) {
     //Creating a channel for someone else
-    var indexOfhash = user.indexOf('#');
-    var otherUsername = user.substr(1, indexOfhash - 1).trim();
+    var otherUsername = _extractUsernameFromMention(user);
     var otherUser = bot.users.get('name', otherUsername);
     channelFormat = `${otherUser.username}_${topic}`;
+    //The keys the topics object are username mention ids
     user = otherUser.mention();
   } else {
     //Creating a channel for you
+    //The keys the topics object are username mention ids
     user = message.author.mention();
   }
 
@@ -132,6 +133,7 @@ function _handleCreateStreamChannel(bot, message, args) {
   if (existingChannel) {
     joinMeStreams[topic][user].channel = existingChannel;
     joinMeStreams[topic][user].link = link;
+
     bot.setChannelTopic(existingChannel, link, (err) => {
       if (err) {
         console.error(err);
@@ -139,6 +141,7 @@ function _handleCreateStreamChannel(bot, message, args) {
           'There was an error setting the existings channel topic!');
       }
     });
+
     return bot.sendMessage(message.channel, `Channel already exists.. but updated stream link`);
   } else {
     return _createChannel(channelFormat, bot, message, topic, user)
@@ -215,7 +218,12 @@ function _putStreamInObject(topic, user, link, description) {
     channel: '',
   };
 
-  console.log(`Key: ${topic}, User Key: ${user}`);
+  console.log(`Put in Object: Key: ${topic}, User Key: ${user}`);
+}
+
+function _extractUsernameFromMention(mentionString) {
+  var indexOfhash = mentionString.indexOf('#');
+  return mentionString.substr(1, indexOfhash - 1).trim();
 }
 
 function handleStreams(bot, message, cmd_args) {
