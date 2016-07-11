@@ -1,6 +1,6 @@
 var fs = require('fs')
 
-var helptext = fs.readFileSync(__dirname + '/helpText.txt', 'utf8').split(/\n{3}/g)
+var helptext = fs.readFileSync(__dirname + '/helpText.txt', 'utf8').split(/\n{3,}/g)
 
 helptext.forEach(function(txt) {
   var result = txt.trim().match(/^:([^:\n]+):\n/)

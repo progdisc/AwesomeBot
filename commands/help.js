@@ -15,8 +15,8 @@ function handleHelp(bot, message, cmd_args) {
       .reduce((obj, row) => (obj[row[0]] = row[1], obj), {})
   );
 
-  if (simpleResponses[message.cleanContent]) {
-    return bot.reply(message, simpleResponses[message.cleanContent]);
+  if (simpleResponses[message.cleanContent.toLowerCase()]) {
+    return bot.reply(message, simpleResponses[message.cleanContent.toLowerCase()]);
   } else {
     return bot.reply(message, "I don't know anything about that. If you have a suggestion, let us know!");
   }
