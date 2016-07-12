@@ -1,5 +1,5 @@
 {
-    "name": "commandtext",
+    "name": "TheAwesomeBot",
     "version": "1.0.0",
     "description": "",
     "main": "TheAwesomeBot.js",
@@ -9,14 +9,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/fzxt/commandText.git"
+        "url": "git+https://github.com/fzxt/AwesomeBot.git"
     },
     "author": "",
-    "license": "ISC",
+    "license": "MIT",
     "bugs": {
-        "url": "https://github.com/fzxt/commandText/issues"
+        "url": "https://github.com/fzxt/AwesomeBot/issues"
     },
-    "homepage": "https://github.com/fzxt/commandText#readme",
+    "homepage": "https://github.com/fzxt/AwesomeBot",
     "dependencies": {
         "discord.js": "^8.0.0"
     }
