@@ -5,28 +5,30 @@ var Settings = require('./settings.json');
 var Help = require('./commands/help.js');
 var Stream = require('./commands/stream.js');
 var JSEval = require('./commands/jseval.js');
+var Pros = require('./commands/pro.js');
 var Vote = require('./commands/vote.js');
 var Uptime = require('./commands/uptime.js');
 
 function TheAwesomeBot(token, discord_opt) {
   this.token = token;
-  this.bot = new Discord.Client(discord_opt || {autoReconnect: true});
+  this.bot = new Discord.Client(discord_opt || { autoReconnect: true });
 
   this.cmds = {
     help: Help.handleHelp,
     stream: Stream.handleStreams,
+    pros: Pros.handlePro,
     jseval: JSEval.handleJSEval,
     vote: Vote.handleVote,
-    uptime: Uptime.handleUptime
+    uptime: Uptime.handleUptime,
   };
 
   // store the RE as they're expensive to create
   this.cmd_re = new RegExp(`^${Settings.bot_cmd} (${Object.keys(this.cmds).join('|')})(.*) *`, 'i');
 };
 
-TheAwesomeBot.prototype.onMessage = function() {
+TheAwesomeBot.prototype.onMessage = function () {
   var instance = this;
-  return (function(message) {
+  return (function (message) {
     // don't respond to own messages
     if (instance.bot.user.username === message.author.username)
       return;
@@ -39,6 +41,7 @@ TheAwesomeBot.prototype.onMessage = function() {
       if (message.content.indexOf(Settings.bot_cmd) === 0) {
         instance.cmds.help(instance.bot, message, cmd_args);
       }
+
       return;
     }
 
@@ -50,26 +53,32 @@ TheAwesomeBot.prototype.onMessage = function() {
   });
 };
 
-TheAwesomeBot.prototype.onReady = function() {
-  return (function() {
+TheAwesomeBot.prototype.onReady = function () {
+  var instance = this;
+  return (function () {
     console.log('Connected to discord server');
+    console.log('Loading pros..');
+    Pros.loadAndMatchPros(instance.bot, (err, status) => {
+      if (err) console.log(err);
+      else if (status == 'Done') console.log('Done reading in pros from #helpdirectory!');
+    });
   });
 };
 
-TheAwesomeBot.prototype.onDisconnected = function() {
-  return (function() {
+TheAwesomeBot.prototype.onDisconnected = function () {
+  return (function () {
     console.warn('Bot has been disconnected from server...');
   });
 };
 
-TheAwesomeBot.prototype.onError = function() {
-  return (function(err) {
-    console.error("error: ", e);
+TheAwesomeBot.prototype.onError = function () {
+  return (function (err) {
+    console.error('error: ', e);
     console.error(e.trace);
   });
 };
 
-TheAwesomeBot.prototype.init = function() {
+TheAwesomeBot.prototype.init = function () {
   // setup bindings
   this.bot
     .on('message', this.onMessage())
@@ -77,9 +86,8 @@ TheAwesomeBot.prototype.init = function() {
     .on('disconnected', this.onDisconnected())
     .on('error', this.onError());
 
-  console.log('Connecting...')
+  console.log('Connecting...');
   this.bot.loginWithToken(this.token, this.discord_opt);
-}
+};
 
 module.exports = TheAwesomeBot;
-
