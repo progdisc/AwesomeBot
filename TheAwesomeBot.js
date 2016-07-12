@@ -1,66 +1,85 @@
 var Discord = require('discord.js');
 var Settings = require('./settings.json');
 
+// commands
 var Help = require('./commands/help.js');
 var Stream = require('./commands/stream.js');
 var JSEval = require('./commands/jseval.js');
 var Vote = require('./commands/vote.js');
 var Uptime = require('./commands/uptime.js');
 
-var cmds = {
-  help: Help.handleHelp,
-  stream: Stream.handleStreams,
-  jseval: JSEval.handleJSEval,
-  vote: Vote.handleVote,
-  uptime: Uptime.handleUptime
+function TheAwesomeBot(token, discord_opt) {
+  this.token = token;
+  this.bot = new Discord.Client(discord_opt || {autoReconnect: true});
+
+  this.cmds = {
+    help: Help.handleHelp,
+    stream: Stream.handleStreams,
+    jseval: JSEval.handleJSEval,
+    vote: Vote.handleVote,
+    uptime: Uptime.handleUptime
+  };
+
+  // store the RE as they're expensive to create
+  this.cmd_re = new RegExp(`^${Settings.bot_cmd} (${Object.keys(this.cmds).join('|')})(.*) *`, 'i');
 };
 
-var bot = new Discord.Client({autoReconnect: true});
+TheAwesomeBot.prototype.onMessage = function() {
+  var instance = this;
+  return (function(message) {
+    // don't respond to own messages
+    if (instance.bot.user.username === message.author.username)
+      return;
 
-// save the RE as they're expensive to create
-var cmd_re = new RegExp(`^${Settings.bot_cmd} (${Object.keys(cmds).join('|')})(.*) *`, 'i');
+    // check if message is a command
+    var cmd_match = message.cleanContent.match(instance.cmd_re);
 
-bot.on('message', function (message) {
-  // don't respond to own messages
-  if (bot.user.username == message.author.username)
-    return;
-
-  // check if message is a command
-  var cmd_match = message.cleanContent.match(cmd_re);
-
-  // not a known command
-  if (!cmd_match) {
-    if (message.content.indexOf(Settings.bot_cmd) === 0) {
-      Help.handleHelp(bot, message, cmd_args);
+    // not a known command
+    if (!cmd_match) {
+      if (message.content.indexOf(Settings.bot_cmd) === 0) {
+        instance.cmds.help(instance.bot, message, cmd_args);
+      }
+      return;
     }
-    return;
-  }
 
-  // process command
-  var cmd = cmd_match[1];
-  var cmd_args = cmd_match[2].trim();
+    // process commands
+    var cmd = cmd_match[1];
+    var cmd_args = cmd_match[2].trim();
 
-  cmds[cmd](bot, message, cmd_args);
-});
+    instance.cmds[cmd](instance.bot, message, cmd_args);
+  });
+};
 
-bot.on('disconnected', function () {
-  console.warn('Bot has been disconnected from server...')
-})
+TheAwesomeBot.prototype.onReady = function() {
+  return (function() {
+    console.log('Connected to discord server');
+  });
+};
 
-bot.on('error', function (e) {
-  console.error("error: ", e)
-  console.error(e.trace)
-})
+TheAwesomeBot.prototype.onDisconnected = function() {
+  return (function() {
+    console.warn('Bot has been disconnected from server...');
+  });
+};
 
-bot.on('ready', function () {
-  console.log('Connected to discord server')
-})
+TheAwesomeBot.prototype.onError = function() {
+  return (function(err) {
+    console.error("error: ", e);
+    console.error(e.trace);
+  });
+};
 
-function init(token) {
+TheAwesomeBot.prototype.init = function() {
+  // setup bindings
+  this.bot
+    .on('message', this.onMessage())
+    .on('ready', this.onReady())
+    .on('disconnected', this.onDisconnected())
+    .on('error', this.onError());
+
   console.log('Connecting...')
-  bot.loginWithToken(token);
+  this.bot.loginWithToken(this.token, this.discord_opt);
 }
 
-module.exports = {
-  init: init
-}
+module.exports = TheAwesomeBot;
+

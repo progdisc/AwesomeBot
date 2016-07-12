@@ -8,7 +8,7 @@ function start() {
     throw Error('Discord token not set');
   }
   
-  Bot.init(token);
+  (new Bot(token).init());
 }
 
 start();
