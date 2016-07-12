@@ -56,6 +56,11 @@ bot.on('ready', function () {
   console.log('Connected to discord server')
 })
 
-console.log('Connecting...')
-bot.loginWithToken(Settings.api_token || process.env.DISCORD_TOKEN);
+function init(token) {
+  console.log('Connecting...')
+  bot.loginWithToken(token);
+}
 
+module.exports = {
+  init: init
+}
