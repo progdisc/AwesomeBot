@@ -1,3 +1,3 @@
 # AwesomeBot
 
-![status](https://travis-ci.org/fzxt/AwesomeBot.svg?branch=master)
+[![status](https://travis-ci.org/fzxt/AwesomeBot.svg?branch=master)](https://travis-ci.org/fzxt/AwesomeBot)
