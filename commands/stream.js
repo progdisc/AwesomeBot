@@ -57,6 +57,11 @@ function handleJoinMeCommands(bot, message, cmd_args) {
       _listStreams(bot, message);
       break;
     }
+
+    case 'removeall': {
+      autoRemove(bot);
+      break;
+    }
   }
 }
 
@@ -93,7 +98,6 @@ function _handleRemove(bot, message, args) {
       return bot.sendMessage(message.channel, `Could not find ${user}`);
     }
   });
-
 }
 
 function _handleCreateStreamChannel(bot, message, args) {
@@ -108,13 +112,13 @@ function _handleCreateStreamChannel(bot, message, args) {
       'A valid http/https link must be supplied as 2nd arg `!bot stream create [topic] [link] [optional_user]`');
   }
 
-  var channelFormat = `${message.author.username}_${topic}`;
+  var channelFormat = `streaming_${message.author.username}_${topic}`;
 
   if (user) {
     //Creating a channel for someone else
     var otherUsername = _extractUsernameFromMention(user);
     var otherUser = bot.users.get('name', otherUsername);
-    channelFormat = `${otherUser.username}_${topic}`;
+    channelFormat = `streaming_${otherUser.username}_${topic}`;
     //The keys the topics object are username mention ids
     user = otherUser.mention();
   } else {
@@ -145,18 +149,28 @@ function _handleCreateStreamChannel(bot, message, args) {
     return bot.sendMessage(message.channel, `Channel already exists.. but updated stream link`);
   } else {
     return _createChannel(channelFormat, bot, message, topic, user)
-
-          .then((createdChannel) => _setTopicToLink(createdChannel,
-            link, bot, topic, user))
-
-          .then((channelWithTopic) => {
+          .then((createdChannel) => _setTopicToLink(createdChannel, link, bot, topic, user))
+          .then((channelWithTopic) =>
             return bot.reply(message.channel, `Created ${channelWithTopic.mention()}!`);
-          })
-
+          )
           .catch((errMessage) => {
             return bot.reply(message.channel, `Sorry, could not create channel`);
           });
   }
+}
+
+function autoRemove(bot) {
+  var channels = bot.servers[0].channels;
+  Object.keys(channels).forEach(key => {
+    if (channels[key] && channels[key].name != undefined)
+    if (channels[key].name.startsWith('streaming')) {
+      var channelName = channels[key].name;
+      bot.deleteChannel(channels[key], (err) => {
+        if (err) return console.log(err);
+        console.log(`Removed ${channelName}`);
+      });
+    }
+  });
 }
 
 function _listStreams(bot, message) {
@@ -232,4 +246,5 @@ function handleStreams(bot, message, cmd_args) {
 
 module.exports = {
   handleStreams: handleStreams,
+  autoRemove: autoRemove,
 };

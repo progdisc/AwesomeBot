@@ -57,11 +57,15 @@ TheAwesomeBot.prototype.onReady = function () {
   var instance = this;
   return (function () {
     console.log('Connected to discord server');
+
     console.log('Loading pros..');
     Pros.loadAndMatchPros(instance.bot, (err, status) => {
       if (err) console.log(err);
       else if (status == 'Done') console.log('Done reading in pros from #helpdirectory!');
     });
+
+    console.log('Deleting all stream channels..');
+    Stream.autoRemove(instance.bot);
   });
 };
 
