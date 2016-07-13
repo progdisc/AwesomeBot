@@ -64,7 +64,7 @@ TheAwesomeBot.prototype.onReady = function () {
       else if (status == 'Done') console.log('Done reading in pros from #helpdirectory!');
     });
 
-    console.log('Deleting all stream channels..');
+    console.log('Checking for all stream channels..');
     Stream.autoRemove(instance.bot);
   });
 };

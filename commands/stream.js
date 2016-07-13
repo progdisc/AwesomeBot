@@ -34,10 +34,17 @@ var createStreamChannel = `${bot_cmd} ${streamcmd} create`;
 var removeStream = `${bot_cmd} ${streamcmd} remove`;
 
 //!bot stream list
-var listStreams = `${bot_cmd} ${streamcmd} list`;
+var listStreams =  `${bot_cmd} ${streamcmd} list`;
 
 //in memory object containing join.me streams
 var joinMeStreams = {};
+
+function _isAdminOrMod(server, user) {
+  var immuneRoles = new Set(Settings.voting.immuneRoles);
+  var userRoles = new Set(server.rolesOfUser(user.id).map(r => r.name));
+  var setIntersection = [...userRoles].filter(r => immuneRoles.has(r));
+  return setIntersection.length > 0;
+}
 
 function handleJoinMeCommands(bot, message, cmd_args) {
   var cmd = cmd_args.split(' ')[0];
@@ -59,7 +66,8 @@ function handleJoinMeCommands(bot, message, cmd_args) {
     }
 
     case 'removeall': {
-      autoRemove(bot);
+      if (_isAdminOrMod(bot.servers['0'], message.author)) autoRemove(bot);
+      else return bot.reply(message, 'Only Admins or Mods can delete all stream channels');
       break;
     }
   }
@@ -70,6 +78,7 @@ function _handleRemove(bot, message, args) {
 
   //mentionString e.g @[some_username]#02123
   //username = "some_username"
+
   var username = _extractUsernameFromMention(mentionString);
 
   var user = bot.users.get('name', username).mention();
@@ -112,13 +121,13 @@ function _handleCreateStreamChannel(bot, message, args) {
       'A valid http/https link must be supplied as 2nd arg `!bot stream create [topic] [link] [optional_user]`');
   }
 
-  var channelFormat = `streaming_${message.author.username}_${topic}`;
+  var channelFormat = `stream_${message.author.username}_${topic}`;
 
   if (user) {
     //Creating a channel for someone else
     var otherUsername = _extractUsernameFromMention(user);
     var otherUser = bot.users.get('name', otherUsername);
-    channelFormat = `streaming_${otherUser.username}_${topic}`;
+    channelFormat = `stream_${otherUser.username}_${topic}`;
     //The keys the topics object are username mention ids
     user = otherUser.mention();
   } else {
@@ -150,9 +159,9 @@ function _handleCreateStreamChannel(bot, message, args) {
   } else {
     return _createChannel(channelFormat, bot, message, topic, user)
           .then((createdChannel) => _setTopicToLink(createdChannel, link, bot, topic, user))
-          .then((channelWithTopic) =>
+          .then((channelWithTopic) => {
             return bot.reply(message.channel, `Created ${channelWithTopic.mention()}!`);
-          )
+          })
           .catch((errMessage) => {
             return bot.reply(message.channel, `Sorry, could not create channel`);
           });
@@ -163,7 +172,7 @@ function autoRemove(bot) {
   var channels = bot.servers[0].channels;
   Object.keys(channels).forEach(key => {
     if (channels[key] && channels[key].name != undefined)
-    if (channels[key].name.startsWith('streaming')) {
+    if (channels[key].name.startsWith('stream')) {
       var channelName = channels[key].name;
       bot.deleteChannel(channels[key], (err) => {
         if (err) return console.log(err);
