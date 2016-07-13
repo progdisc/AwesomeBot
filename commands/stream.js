@@ -78,7 +78,6 @@ function _handleRemove(bot, message, args) {
 
   //mentionString e.g @[some_username]#02123
   //username = "some_username"
-
   var username = _extractUsernameFromMention(mentionString);
 
   var user = bot.users.get('name', username).mention();
@@ -90,11 +89,7 @@ function _handleRemove(bot, message, args) {
 
       var channelToDelete = joinMeStreams[topic][user].channel;
 
-      if (Object.keys(joinMeStreams[topic]).length == 1) {
-        delete joinMeStreams[topics];
-      } else {
-        delete joinMeStreams[topics][user];
-      }
+      _deleteStreamInObject(topic, user);
 
       bot.deleteChannel(channelToDelete, (err) => {
         if (err) return bot.sendMessage(message.channel,
@@ -128,11 +123,11 @@ function _handleCreateStreamChannel(bot, message, args) {
     var otherUsername = _extractUsernameFromMention(user);
     var otherUser = bot.users.get('name', otherUsername);
     channelFormat = `stream_${otherUser.username}_${topic}`;
-    //The keys the topics object are username mention ids
+    //The keys in the topics object are username mention ids
     user = otherUser.mention();
   } else {
     //Creating a channel for you
-    //The keys the topics object are username mention ids
+    //The keys in the topics object are username mention ids
     user = message.author.mention();
   }
 
@@ -170,6 +165,7 @@ function _handleCreateStreamChannel(bot, message, args) {
 
 function autoRemove(bot) {
   var channels = bot.servers[0].channels;
+
   Object.keys(channels).forEach(key => {
     if (channels[key] && channels[key].name != undefined)
     if (channels[key].name.startsWith('stream')) {
@@ -180,6 +176,10 @@ function autoRemove(bot) {
       });
     }
   });
+
+  if (Object.keys(joinMeStreams).length > 0) {
+    Object.keys(joinMeStreams).forEach(topic => delete joinMeStreams[topic]);
+  }
 }
 
 function _listStreams(bot, message) {
@@ -242,6 +242,14 @@ function _putStreamInObject(topic, user, link, description) {
   };
 
   console.log(`Put in Object: Key: ${topic}, User Key: ${user}`);
+}
+
+function _deleteStreamInObject(topic, user) {
+  if (Object.keys(joinMeStreams[topic]).length == 1) {
+    delete joinMeStreams[topic];
+  } else {
+    delete joinMeStreams[topic][user];
+  }
 }
 
 function _extractUsernameFromMention(mentionString) {
