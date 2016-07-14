@@ -1,4 +1,4 @@
-var Settings = require('../settings.json');
+var Settings = require('../../settings.json');
 
 var immuneRoles = new Set(Settings.voting.immuneRoles);
 var voteThreshold = Settings.voting.voteThreshold;

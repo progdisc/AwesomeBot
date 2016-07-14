@@ -1,4 +1,4 @@
-var Settings = require('../settings');
+var Settings = require('../../settings');
 
 /*
   This module is meant to handle the command '!bot streams #channel'

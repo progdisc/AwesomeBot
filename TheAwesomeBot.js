@@ -2,12 +2,12 @@ var Discord = require('discord.js');
 var Settings = require('./settings.json');
 
 // commands
-var Help = require('./commands/help.js');
-var Stream = require('./commands/stream.js');
-var JSEval = require('./commands/jseval.js');
-var Pros = require('./commands/pro.js');
-var Vote = require('./commands/vote.js');
-var Uptime = require('./commands/uptime.js');
+var Help = require('./commands/help/help.js');
+var Stream = require('./commands/stream/stream.js');
+var JSEval = require('./commands/jseval/jseval.js');
+var Pros = require('./commands/pro/pro.js');
+var Vote = require('./commands/vote/vote.js');
+var Uptime = require('./commands/uptime/uptime.js');
 
 function TheAwesomeBot(token, discord_opt) {
   this.token = token;

@@ -1,5 +1,5 @@
 'use strict'
-const Settings = require('../settings.json');
+const Settings = require('../../settings.json');
 const helpCommands = require('./helpText.js');
 
 const basicHelp = "Awesome is my name, don't wear it out! " +
