@@ -5,6 +5,14 @@
     "immuneRoles": ["Admins", "Mods"],
     "voteThreshold": 5,
     "timeout_in_minutes": 5
-  }
+  },
+  "commands": [
+    "help",
+    "jseval",
+    "pro",
+    "stream",
+    "uptime",
+    "vote"
+  ]
 }
 

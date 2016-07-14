@@ -1,14 +1,8 @@
-var proTerms = require('./proTerms.js');
-
-/*
-  This module is meant to handle the command '!bot pro [lang]'
-*/
-
-//in-memory-object to hold pros and terms
+//in-memory object to hold pros and terms
 var pros = {};
 
 function _initProsObject() {
-  proTerms = proTerms
+  proTerms = require('./proTerms.js')
     .filter(term => term.length > 0)
     .map(term => term.toLowerCase().trim());
 
@@ -30,9 +24,9 @@ function _getProsOnline(server) {
 function loadAndMatchPros(bot, cb) {
   _initProsObject();
 
-  var helpChannel = bot.channels.get('name', 'helpdirectory');
+  var helpChannel = bot.client.channels.get('name', 'helpdirectory');
 
-  bot.getChannelLogs(helpChannel, 50, (err, messages) => {
+  bot.client.getChannelLogs(helpChannel, 50, (err, messages) => {
 
     if (err) {
       console.log(err);
@@ -56,30 +50,38 @@ function loadAndMatchPros(bot, cb) {
   });
 }
 
-function listPros(bot, message, cmd_args) {
-  var lang = cmd_args.toLowerCase().trim();
-  var replyString = `Here are some pros online that can help with ${cmd_args}: `;
-  var server = bot.servers['0'];
+module.exports = {
+  usage: 'pro <topic> - list of people who knows about <topic>',
 
-  var prosOnline = _getProsOnline(server);
+  run: (bot, message, cmd_args) => {
+    if (!cmd_args) {
+      bot.client.reply(message, 'please gimme a topic, will\'ya?');
+      return;
+    }
+    var lang = cmd_args.toLowerCase().trim();
+    var replyString = `Here are some pros online that can help with "${cmd_args}": `;
+    var server = bot.client.servers['0'];
 
-  if (pros[lang] && pros[lang].length > 0) {
-    pros[lang].forEach(pro => {
-      if (prosOnline.has(pro.username)) {
-        replyString += '\n' + `${pro.mention}`;
-      }
+    var prosOnline = _getProsOnline(server);
+
+    if (pros[lang] && pros[lang].length > 0) {
+      pros[lang].forEach(pro => {
+        if (prosOnline.has(pro.username)) {
+          replyString += '\n' + `${pro.mention}`;
+        }
+      });
+      return bot.client.reply(message, replyString);
+    } else {
+      return bot.client.reply(message, `No pros found for ${cmd_args} :(`);
+    }
+  },
+
+  init: bot => {
+    console.log('Loading pros...');
+    loadAndMatchPros(bot, (err, status) => {
+      if (err) console.log(err);
+      else if (status == 'Done') console.log('Done reading in pros from #helpdirectory!');
     });
-    return bot.reply(message, replyString);
-  } else {
-    return bot.reply(message, `No pros found for ${cmd_args} :(`);
   }
 }
 
-function handlePro(bot, message, cmd_args) {
-  listPros(bot, message, cmd_args);
-}
-
-module.exports = {
-  loadAndMatchPros: loadAndMatchPros,
-  handlePro: handlePro,
-};

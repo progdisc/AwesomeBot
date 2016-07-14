@@ -44,14 +44,14 @@ function handleJSEval(bot, message, cmd_args) {
     result.buffer.map(comment_multi_line).join('\n') + '\n' :
     ''
 
-  var output = 'executing JavaScript... ```js\n' +
+  var output = 'here\' the result:```js\n' +
     result.code + '\n' + buffer +
     '//=> ' + result.last_expression + '```'
-  return bot.reply(message, output)
+  return bot.client.reply(message, output)
 }
 
 module.exports = {
-  handleJSEval,
-  comment_multi_line,
-  safer_eval
+  usage: 'jseval <js expression> - runs <js expression>, displays the result',
+
+  run: handleJSEval
 }

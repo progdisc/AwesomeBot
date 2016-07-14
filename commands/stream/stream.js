@@ -1,42 +1,29 @@
 var Settings = require('../../settings');
 
 /*
-  This module is meant to handle the command '!bot streams #channel'
+   This module is meant to handle the command '!bot streams #channel'
 
-  Notes:
-  - streamCommands is an array with the valid stream commands for the keys in channels.js:
-    e.g ['!bot streams python', '!bot streams php'...]
-    e.g ['!bot streams remove [channel] [user]']
+Notes:
+- streamCommands is an array with the valid stream commands for the keys in channels.js:
+e.g ['!bot streams python', '!bot streams php'...]
+e.g ['!bot streams remove [channel] [user]']
 
-  How it works:
-  - joinMeStreams is an object with the following schema:
+How it works:
+- joinMeStreams is an object with the following schema:
 
-    joinMeStreams: {
-      [channel] : {
-               [user]: link ,
-               [user]: link ,
-                    .
-                    .
-                    .
-        }
-      }
-    - joinMeStreams is an in-memory-object of sorts to keep track of streams.
+joinMeStreams: {
+[channel] : {
+[user]: link ,
+[user]: link ,
+.
+.
+.
+}
+}
+- joinMeStreams is an in-memory-object of sorts to keep track of streams.
 */
 
-var streamcmd = 'stream';
-
-var bot_cmd = Settings.bot_cmd;
-
-//!bot stream create [topic] [link]
-var createStreamChannel = `${bot_cmd} ${streamcmd} create`;
-
-//!bot stream remove [user]
-var removeStream = `${bot_cmd} ${streamcmd} remove`;
-
-//!bot stream list
-var listStreams =  `${bot_cmd} ${streamcmd} list`;
-
-//in memory object containing join.me streams
+//in memory object containing join.me stream
 var joinMeStreams = {};
 
 function _isAdminOrMod(server, user) {
@@ -50,37 +37,30 @@ function handleJoinMeCommands(bot, message, cmd_args) {
   var cmd = cmd_args.split(' ')[0];
 
   switch (cmd) {
-    case 'create': {
+    case 'create':
       _handleCreateStreamChannel(bot, message, cmd_args);
       break;
-    }
 
-    case 'remove': {
-      _handleRemove(bot, message, cmd_args);
-      break;
-    }
+  case 'remove':
+    _handleRemove(bot, message, cmd_args);
+    break;
 
-    case 'list': {
-      _listStreams(bot, message);
-      break;
-    }
+case 'list':
+  _listStreams(bot, message, cmd_args);
+  break;
 
-    case 'removeall': {
-      if (_isAdminOrMod(bot.servers['0'], message.author)) autoRemove(bot);
-      else return bot.reply(message, 'Only Admins or Mods can delete all stream channels');
+    case 'removeall':
+      if (_isAdminOrMod(bot.client.servers['0'], message.author)) {
+        autoRemove(bot);
+      } else {
+        return bot.client.reply(message, 'Only Admins or Mods can delete all stream channels');
+      }
       break;
-    }
   }
 }
 
 function _handleRemove(bot, message, args) {
-  var [, mentionString] = args.split(' ');
-
-  //mentionString e.g @[some_username]#02123
-  //username = "some_username"
-  var username = _extractUsernameFromMention(mentionString);
-
-  var user = bot.users.get('name', username).mention();
+  var user = message.mentions[0];
 
   var topics = Object.keys(joinMeStreams);
 
@@ -91,15 +71,16 @@ function _handleRemove(bot, message, args) {
 
       _deleteStreamInObject(topic, user);
 
-      bot.deleteChannel(channelToDelete, (err) => {
-        if (err) return bot.sendMessage(message.channel,
-        'Sorry, could not delete channel');
+      bot.client.deleteChannel(channelToDelete, (err) => {
+        if (err) return bot.client.sendMessage(message.channel,
+                                        'Sorry, could not delete channel');
       });
 
-      return bot.sendMessage(message.channel,
-      `Removed ${user} from active streamers list and deleted ${channelToDelete.name}`);
+      return bot.client.sendMessage(message.channel,
+                             `Removed ${user} from active streamers list and deleted #${channelToDelete.name}`);
     } else {
-      return bot.sendMessage(message.channel, `Could not find ${user}`);
+      // user has no stream in this topic
+      //return bot.client.sendMessage(message.channel, `Could not find ${user}`);
     }
   });
 }
@@ -108,73 +89,69 @@ function _handleCreateStreamChannel(bot, message, args) {
   var [, topic, link, user] = args.split(' ');
 
   if (!topic || !link) {
-    return bot.reply(message, 'Err, please provide link and topic `!bot stream create [topic] [link] [optional_user]`');
+    return bot.client.reply(message, 'err, please provide topic and link!');
   }
 
-  if (link.indexOf('http') == -1 && link.indexOf('https://') == -1) {
-    return bot.reply(message,
-      'A valid http/https link must be supplied as 2nd arg `!bot stream create [topic] [link] [optional_user]`');
+  if (link.indexOf('http://') == -1 && link.indexOf('https://') == -1) {
+    return bot.client.reply(message, 'a valid link must be supplied (starting with http/https)!');
   }
 
-  var channelFormat = `stream_${message.author.username}_${topic}`;
-
+  var user = message.mentions[0];
   if (user) {
     //Creating a channel for someone else
-    var otherUsername = _extractUsernameFromMention(user);
-    var otherUser = bot.users.get('name', otherUsername);
-    channelFormat = `stream_${otherUser.username}_${topic}`;
-    //The keys in the topics object are username mention ids
-    user = otherUser.mention();
+    //The keys in the topics object are username mention id
   } else {
     //Creating a channel for you
-    //The keys in the topics object are username mention ids
-    user = message.author.mention();
+    //The keys in the topics object are username mention id
+    user = message.author;
   }
+  channelFormat = `stream_${user.username}_${topic}`;
+  user = user.mention();
 
   var defaultDescription =
-    `${message.author.mention()} is streaming about ${topic}`;
+    `${user} is streaming about ${topic}`;
 
-  _putStreamInObject(topic, user, link, defaultDescription);
+    _putStreamInObject(topic, user, link, defaultDescription);
 
-  var existingChannel = bot.channels.get('name', channelFormat);
+    var existingChannel = bot.client.channels.get('name', channelFormat);
 
-  if (existingChannel) {
-    joinMeStreams[topic][user].channel = existingChannel;
-    joinMeStreams[topic][user].link = link;
+    if (existingChannel) {
+      joinMeStreams[topic][user].channel = existingChannel;
+      joinMeStreams[topic][user].link = link;
 
-    bot.setChannelTopic(existingChannel, link, (err) => {
-      if (err) {
-        console.error(err);
-        return bot.reply(message,
-          'There was an error setting the existings channel topic!');
-      }
-    });
+      bot.client.setChannelTopic(existingChannel, link, (err) => {
+        if (err) {
+          console.error(err);
+          return bot.client.reply(message,
+                           'There was an error setting the existings channel topic!');
+        }
+      });
 
-    return bot.sendMessage(message.channel, `Channel already exists.. but updated stream link`);
-  } else {
-    return _createChannel(channelFormat, bot, message, topic, user)
-          .then((createdChannel) => _setTopicToLink(createdChannel, link, bot, topic, user))
-          .then((channelWithTopic) => {
-            return bot.reply(message.channel, `Created ${channelWithTopic.mention()}!`);
-          })
-          .catch((errMessage) => {
-            return bot.reply(message.channel, `Sorry, could not create channel`);
-          });
-  }
+      return bot.client.sendMessage(message.channel, `Channel already exists.. Updated stream link!`);
+    } else {
+      return _createChannel(channelFormat, bot, message, topic, user)
+      .then((createdChannel) => _setTopicToLink(createdChannel, link, bot, topic, user))
+      .then((channelWithTopic) => {
+        return bot.client.reply(message.channel, `Created ${channelWithTopic.mention()}!`);
+      })
+      .catch((errMessage) => {
+        return bot.client.reply(message.channel, `Sorry, could not create channel`);
+      });
+    }
 }
 
 function autoRemove(bot) {
-  var channels = bot.servers[0].channels;
+  var channels = bot.client.servers[0].channels;
 
   Object.keys(channels).forEach(key => {
     if (channels[key] && channels[key].name != undefined)
-    if (channels[key].name.startsWith('stream')) {
-      var channelName = channels[key].name;
-      bot.deleteChannel(channels[key], (err) => {
-        if (err) return console.log(err);
-        console.log(`Removed ${channelName}`);
-      });
-    }
+      if (channels[key].name.startsWith('stream')) {
+        var channelName = channels[key].name;
+        bot.client.deleteChannel(channels[key], (err) => {
+          if (err) return console.log(err);
+          //console.log(`Removed ${channelName}`);
+        });
+      }
   });
 
   if (Object.keys(joinMeStreams).length > 0) {
@@ -182,47 +159,45 @@ function autoRemove(bot) {
   }
 }
 
-function _listStreams(bot, message) {
+function _listStreams(bot, message, cmd_args) {
   var buildMessage = 'Available streams: \n';
 
   var topics = Object.keys(joinMeStreams);
 
   if (topics.length == 0) {
-    return bot.sendMessage(message.channel,
-    'No streams! :(');
+    return bot.client.sendMessage(message.channel, 'No streams! :frowning:');
   }
 
   topics.forEach((topic, index) => {
     var streams = Object.keys(joinMeStreams[topic]);
 
-    buildMessage += ` - ${topic}:` + '\n';
+    buildMessage += `**\n${topic}**\n`;
 
     streams.forEach((stream, index) => {
 
       var link = joinMeStreams[topic][stream].link;
       var description = joinMeStreams[topic][stream].description;
 
-      buildMessage += `${index + 1}. ${link} - ${description}`
-      + '\n';
+      buildMessage += `   ${index + 1}. ${link} - ${description}\n`;
     });
   });
 
-  return bot.sendMessage(message.channel, buildMessage);
+  return bot.client.sendMessage(message.channel, buildMessage);
 }
 
 function _createChannel(title, bot, message, topic, user) {
   return new Promise((resolve, reject) => {
-    bot.createChannel(message.server, title, (err, channel) => {
-        if (err) reject(new Error('An error occured in creating a channel'));
-        joinMeStreams[topic][user].channel = channel;
-        resolve(channel);
-      });
+    bot.client.createChannel(message.server, title, (err, channel) => {
+      if (err) reject(new Error('An error occured in creating a channel'));
+      joinMeStreams[topic][user].channel = channel;
+      resolve(channel);
+    });
   });
 };
 
 function _setTopicToLink(channel, link, bot, topic, user) {
   return new Promise((resolve, reject) => {
-    bot.setChannelTopic(channel, link, (err) => {
+    bot.client.setChannelTopic(channel, link, (err) => {
       if (err) reject(new Error('An error occured in setting a topic to the channel'));
       joinMeStreams[topic][user].channel = channel;
       resolve(channel);
@@ -241,7 +216,7 @@ function _putStreamInObject(topic, user, link, description) {
     channel: '',
   };
 
-  console.log(`Put in Object: Key: ${topic}, User Key: ${user}`);
+  //console.log(`Put in Object: Key: ${topic}, User Key: ${user}`);
 }
 
 function _deleteStreamInObject(topic, user) {
@@ -252,16 +227,22 @@ function _deleteStreamInObject(topic, user) {
   }
 }
 
-function _extractUsernameFromMention(mentionString) {
-  var indexOfhash = mentionString.indexOf('#');
-  return mentionString.substr(1, indexOfhash - 1).trim();
-}
-
-function handleStreams(bot, message, cmd_args) {
-  handleJoinMeCommands(bot, message, cmd_args);
+function init(bot) {
+  console.log('Removing all stream channels..');
+  autoRemove(bot);
 }
 
 module.exports = {
-  handleStreams: handleStreams,
-  autoRemove: autoRemove,
+  usage: [
+    'stream create <topic> <link> [@user] - creates stream about <topic> [by @user]',
+    'stream list <topic> - displays streamings about <topic>',
+    'stream remove <@user> - removes a streaming by <@user>',
+    'stream removeall - removes every streaming (Mods only)',
+  ],
+
+  run: handleJoinMeCommands,
+
+  init: init
 };
+
+

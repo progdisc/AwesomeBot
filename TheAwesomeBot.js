@@ -1,47 +1,36 @@
+var path = require('path');
 var Discord = require('discord.js');
-var Settings = require('./settings.json');
-
-// commands
-var Help = require('./commands/help/help.js');
-var Stream = require('./commands/stream/stream.js');
-var JSEval = require('./commands/jseval/jseval.js');
-var Pros = require('./commands/pro/pro.js');
-var Vote = require('./commands/vote/vote.js');
-var Uptime = require('./commands/uptime/uptime.js');
 
 function TheAwesomeBot(token, discord_opt) {
   this.token = token;
-  this.bot = new Discord.Client(discord_opt || { autoReconnect: true });
-
-  this.cmds = {
-    help: Help.handleHelp,
-    stream: Stream.handleStreams,
-    pros: Pros.handlePro,
-    jseval: JSEval.handleJSEval,
-    vote: Vote.handleVote,
-    uptime: Uptime.handleUptime,
-  };
+  this.client = new Discord.Client(discord_opt || { autoReconnect: true });
+  this.settings = require('./settings.json');
+  this.commands = {};
+  this.usageList = '';
 
   // store the RE as they're expensive to create
-  this.cmd_re = new RegExp(`^${Settings.bot_cmd} (${Object.keys(this.cmds).join('|')})(.*) *`, 'i');
+  this.cmd_re = new RegExp(`^${this.settings.bot_cmd}[\\s]+([^ ]*)[\\s]*(.*)[\\s]*`, 'i');
 };
 
 TheAwesomeBot.prototype.onMessage = function () {
   var instance = this;
   return (function (message) {
     // don't respond to own messages
-    if (instance.bot.user.username === message.author.username)
+    if (instance.client.user.username === message.author.username)
       return;
 
     // check if message is a command
     var cmd_match = message.cleanContent.match(instance.cmd_re);
 
     // not a known command
-    if (!cmd_match) {
-      if (message.content.indexOf(Settings.bot_cmd) === 0) {
-        instance.cmds.help(instance.bot, message, cmd_args);
-      }
+    if (!cmd_match || Object.keys(instance.commands).indexOf(cmd_match[1]) === -1) {
 
+      if (message.content.match(new RegExp(`^${instance.settings.bot_cmd}[\\s]*( .*)?$`, 'i'))) {
+        var helpText = 'maybe try these valid commands? *kthnxbye!*\n\n```';
+        helpText += instance.usageList;
+        helpText += '```';
+        instance.client.reply(message, helpText);
+      }
       return;
     }
 
@@ -49,23 +38,21 @@ TheAwesomeBot.prototype.onMessage = function () {
     var cmd = cmd_match[1];
     var cmd_args = cmd_match[2].trim();
 
-    instance.cmds[cmd](instance.bot, message, cmd_args);
+    instance.commands[cmd].run(instance, message, cmd_args);
   });
 };
 
 TheAwesomeBot.prototype.onReady = function () {
   var instance = this;
   return (function () {
-    console.log('Connected to discord server');
+    console.log('\nConnected to discord server!');
 
-    console.log('Loading pros..');
-    Pros.loadAndMatchPros(instance.bot, (err, status) => {
-      if (err) console.log(err);
-      else if (status == 'Done') console.log('Done reading in pros from #helpdirectory!');
-    });
-
-    console.log('Checking for all stream channels..');
-    Stream.autoRemove(instance.bot);
+    console.log('Running initializations...');
+    for (var cmd in instance.commands) {
+      if (typeof instance.commands[cmd].init == "function") {
+        instance.commands[cmd].init(instance);
+      }
+    };
   });
 };
 
@@ -82,16 +69,40 @@ TheAwesomeBot.prototype.onError = function () {
   });
 };
 
+TheAwesomeBot.prototype.loadCommands = function(cmdList) {
+  var instance = this;
+  instance.usageList = '';
+  cmdList.forEach(cmd => {
+    var fullpath = path.join(__dirname, 'commands', cmd, `${cmd}.js`);
+    var script = require(fullpath);
+    instance.commands[cmd] = script;
+
+    var usageObj = script.usage;
+    var usageStrs = [];
+    if (Array.isArray(usageObj)) {
+      usageObj.forEach(u => usageStrs.push(u));
+    } else {
+      usageStrs.push(usageObj.toString());
+    }
+    usageStrs.forEach(u => instance.usageList += `\n- ${instance.settings.bot_cmd} ${u}`);
+  });
+};
+
 TheAwesomeBot.prototype.init = function () {
-  // setup bindings
-  this.bot
+  // load commands
+  console.log('Loading commands...');
+  this.loadCommands(this.settings.commands);
+
+  // setup events
+  console.log('Setting up event bindings...');
+  this.client
     .on('message', this.onMessage())
     .on('ready', this.onReady())
     .on('disconnected', this.onDisconnected())
     .on('error', this.onError());
 
   console.log('Connecting...');
-  this.bot.loginWithToken(this.token, this.discord_opt);
+  this.client.loginWithToken(this.token, this.discord_opt);
 };
 
 module.exports = TheAwesomeBot;
