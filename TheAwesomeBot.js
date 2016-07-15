@@ -94,7 +94,7 @@ TheAwesomeBot.prototype.loadCommands = function (cmdList) {
     }
 
     usageStrs.forEach(u => {
-      instance.usageList += ` - ${instance.settings.bot_cmd} ${u}`
+      instance.usageList += `\n- ${instance.settings.bot_cmd} ${u}`
     });
   });
 };
