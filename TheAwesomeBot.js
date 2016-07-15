@@ -93,8 +93,9 @@ TheAwesomeBot.prototype.loadCommands = function (cmdList) {
       usageStrs.push(usageObj.toString());
     }
 
-    usageStrs.forEach(u => instance.usageList += `
-- ${instance.settings.bot_cmd} ${u}`);
+    usageStrs.forEach(u => {
+      instance.usageList += ` - ${instance.settings.bot_cmd} ${u}`
+    });
   });
 };
 
