@@ -5,7 +5,8 @@
     "main": "TheAwesomeBot.js",
     "scripts": {
         "start": "node start.js",
-        "test": "echo \"No tests yet :( But let it build!\" && exit 0"
+        "test": "echo \"No tests yet :( But let it build!\" && exit 0",
+        "lint": "eslint"
     },
     "repository": {
         "type": "git",
@@ -19,5 +20,12 @@
     "homepage": "https://github.com/fzxt/AwesomeBot",
     "dependencies": {
         "discord.js": "^8.0.0"
+    },
+    "devDependencies": {
+        "eslint": "^3.0.1",
+        "eslint-config-airbnb": "^9.0.1",
+        "eslint-plugin-import": "^1.10.3",
+        "eslint-plugin-jsx-a11y": "^2.0.1",
+        "eslint-plugin-react": "^5.2.2"
     }
 }
