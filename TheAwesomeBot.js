@@ -9,7 +9,7 @@ function TheAwesomeBot(token, discord_opt) {
   this.usageList = '';
 
   // store the RE as they're expensive to create
-  this.cmd_re = new RegExp(`^${this.settings.bot_cmd}[\\s]+([^ ]*)[\\s]*(.*)[\\s]*`, 'i');
+  this.cmd_re = new RegExp(`^${this.settings.bot_cmd}[s]+([^ ]*)[s]*(.*)[s]*`, 'i');
 };
 
 TheAwesomeBot.prototype.onMessage = function () {
@@ -25,12 +25,13 @@ TheAwesomeBot.prototype.onMessage = function () {
     // not a known command
     if (!cmd_match || Object.keys(instance.commands).indexOf(cmd_match[1]) === -1) {
 
-      if (message.content.match(new RegExp(`^${instance.settings.bot_cmd}[\\s]*( .*)?$`, 'i'))) {
+      if (message.content.match(new RegExp(`^${instance.settings.bot_cmd}[s]*( .*)?$`, 'i'))) {
         var helpText = 'maybe try these valid commands? *kthnxbye!*\n\n```';
         helpText += instance.usageList;
         helpText += '```';
         instance.client.reply(message, helpText);
       }
+
       return;
     }
 
@@ -49,10 +50,17 @@ TheAwesomeBot.prototype.onReady = function () {
 
     console.log('Running initializations...');
     for (var cmd in instance.commands) {
-      if (typeof instance.commands[cmd].init == "function") {
+      if (typeof instance.commands[cmd].init == 'function') {
         instance.commands[cmd].init(instance);
       }
     };
+  });
+};
+
+TheAwesomeBot.prototype.serverNewMember = function () {
+  var instance = this;
+  return (function (server, user) {
+    instance.client.sendMessage(user, instance.usageList);
   });
 };
 
@@ -69,7 +77,7 @@ TheAwesomeBot.prototype.onError = function () {
   });
 };
 
-TheAwesomeBot.prototype.loadCommands = function(cmdList) {
+TheAwesomeBot.prototype.loadCommands = function (cmdList) {
   var instance = this;
   instance.usageList = '';
   cmdList.forEach(cmd => {
@@ -84,7 +92,9 @@ TheAwesomeBot.prototype.loadCommands = function(cmdList) {
     } else {
       usageStrs.push(usageObj.toString());
     }
-    usageStrs.forEach(u => instance.usageList += `\n- ${instance.settings.bot_cmd} ${u}`);
+
+    usageStrs.forEach(u => instance.usageList += `
+- ${instance.settings.bot_cmd} ${u}`);
   });
 };
 
@@ -98,6 +108,7 @@ TheAwesomeBot.prototype.init = function () {
   this.client
     .on('message', this.onMessage())
     .on('ready', this.onReady())
+    .on('serverNewMember', this.serverNewMember())
     .on('disconnected', this.onDisconnected())
     .on('error', this.onError());
 
