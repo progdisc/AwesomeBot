@@ -9,7 +9,7 @@ function TheAwesomeBot(token, discord_opt) {
   this.usageList = '';
 
   // store the RE as they're expensive to create
-  this.cmd_re = new RegExp(`^${this.settings.bot_cmd}[s]+([^ ]*)[s]*(.*)[s]*`, 'i');
+  this.cmd_re = new RegExp(`^${this.settings.bot_cmd}[\\s]+([^ ]*)[\\s]*(.*)[\\s]*`, 'i');
 };
 
 TheAwesomeBot.prototype.onMessage = function () {
@@ -25,7 +25,7 @@ TheAwesomeBot.prototype.onMessage = function () {
     // not a known command
     if (!cmd_match || Object.keys(instance.commands).indexOf(cmd_match[1]) === -1) {
 
-      if (message.content.match(new RegExp(`^${instance.settings.bot_cmd}[s]*( .*)?$`, 'i'))) {
+      if (message.content.match(new RegExp(`^${instance.settings.bot_cmd}[\\s]*( .*)?$`, 'i'))) {
         var helpText = 'maybe try these valid commands? *kthnxbye!*\n\n```';
         helpText += instance.usageList;
         helpText += '```';
