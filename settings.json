@@ -12,7 +12,12 @@
     "pro",
     "stream",
     "uptime",
-    "vote"
-  ]
+    "vote",
+    "openshift"
+  ],
+  "openshift": {
+    "heartbeat_channel": "bots",
+    "heartbeat_interval_in_minutes": 30
+  }
 }
 
