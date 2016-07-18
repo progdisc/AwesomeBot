@@ -86,16 +86,18 @@ TheAwesomeBot.prototype.loadCommands = function (cmdList) {
     instance.commands[cmd] = script;
 
     var usageObj = script.usage;
-    var usageStrs = [];
-    if (Array.isArray(usageObj)) {
-      usageObj.forEach(u => usageStrs.push(u));
-    } else {
+    if (usageObj) {
+      var usageStrs = [];
+      if (Array.isArray(usageObj)) {
+        usageObj.forEach(u => usageStrs.push(u));
+      } else {
       usageStrs.push(usageObj.toString());
+      }
+      
+      usageStrs.forEach(u => {
+        instance.usageList += `\n- ${instance.settings.bot_cmd} ${u}`
+      });
     }
-
-    usageStrs.forEach(u => {
-      instance.usageList += `\n- ${instance.settings.bot_cmd} ${u}`
-    });
   });
 };
 
