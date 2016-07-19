@@ -82,14 +82,16 @@ class TheAwesomeBot {
       this.commands[cmd] = script;
 
       const usageObj = script.usage;
-      const usageStrs = [];
-      if (Array.isArray(usageObj)) {
-        usageObj.forEach(u => usageStrs.push(u));
-      } else {
-        usageStrs.push(usageObj.toString());
-      }
+      if (usageObj) {
+        const usageStrs = [];
+        if (Array.isArray(usageObj)) {
+          usageObj.forEach(u => usageStrs.push(u));
+        } else {
+          usageStrs.push(usageObj.toString());
+        }
 
-      usageStrs.forEach(u => (this.usageList += `\n- ${this.settings.bot_cmd} ${u}`));
+        usageStrs.forEach(u => (this.usageList += `\n- ${this.settings.bot_cmd} ${u}`));
+      }
     });
   }
 
