@@ -1,19 +1,19 @@
-var voteTypes = {
-  'kick' : handleKick,
-  'mute' : handleMute
-};
-
 function handleKick(bot, user, server) {
-  bot.client.kickMember(user, server, function(err) {
+  bot.client.kickMember(user, server, (err) => {
     if (err) console.log(err);
   });
 }
 
 function handleMute(bot, user, server) {
-  bot.client.muteMember(user, server, function(err) {
+  bot.client.muteMember(user, server, (err) => {
     if (err) console.log(err);
   });
 }
+
+const voteTypes = {
+  kick: handleKick,
+  mute: handleMute,
+};
 
 /*
  * currentVotes: dictionary of votings.
@@ -23,8 +23,8 @@ function handleMute(bot, user, server) {
  *  votes: [<people who voted]
  * }
  */
-var currentVotes = {};
-Object.keys(voteTypes).forEach(function(k) {
+const currentVotes = {};
+Object.keys(voteTypes).forEach(k => {
   currentVotes[k] = {};
 });
 
@@ -37,20 +37,21 @@ function setIntersection(setA, setB) {
 }
 
 function processVote(type, bot, message, server, user) {
-  var voting = currentVotes[type][user.username];
+  let voting = currentVotes[type][user.username];
 
   if (!voting) {
     // sets a timeout for this voting
-    var timeoutClj = function() {
-      bot.client.sendMessage(message.channel, `Vote to ${type} ${user.mention()} has timed out. Phew!`);
+    const timeoutClj = () => {
+      bot.client.sendMessage(message.channel,
+        `Vote to ${type} ${user.mention()} has timed out. Phew!`);
       delete currentVotes[type][user.username];
     };
-    var timeoutObj = setTimeout(timeoutClj, bot.settings.voting.timeout_in_minutes * 1000 * 60);
+    const timeoutObj = setTimeout(timeoutClj, bot.settings.voting.timeout_in_minutes * 1000 * 60);
 
     voting = {
       username: user.username,
       votes: [],
-      timeout: timeoutObj
+      timeout: timeoutObj,
     };
     currentVotes[type][user.username] = voting;
   }
@@ -62,34 +63,37 @@ function processVote(type, bot, message, server, user) {
   voting.votes.push(message.author.username);
   if (voting.votes.length >= bot.settings.voting.voteThreshold) {
     clearTimeout(voting.timeout);
-    bot.client.sendMessage(message.channel, `Sorry, ${user.mention()}, but their wish is my command!`);
+    bot.client.sendMessage(message.channel,
+      `Sorry, ${user.mention()}, but their wish is my command!`);
     voteTypes[type](bot, user, server);
-    delete currentVotes[type][user.username]
+    delete currentVotes[type][user.username];
   } else {
-    bot.client.sendMessage(message.channel, `[${voting.votes.length}/${bot.settings.voting.voteThreshold}] votes to ${type} ${user.mention()}!`);
+    let msg = `[${voting.votes.length}/${bot.settings.voting.voteThreshold}]`;
+    msg += ` votes to ${type} ${user.mention()}!`;
+    bot.client.sendMessage(message.channel, msg);
   }
 }
 
 module.exports = {
   usage: `vote <${Object.keys(voteTypes).join('|')}> <@user> - start a vote against <@user>`,
 
-  run: (bot, message, cmd_args) => {
-    if (bot.client.user.username == message.author.username) return;
+  run: (bot, message, cmdArgs) => {
+    if (bot.client.user.username === message.author.username) return;
 
     // command validation
-    var vote_re = new RegExp(`^(${Object.keys(voteTypes).join('|')})[\\s]+@(.*)`, 'i');
-    var re_match = cmd_args.match(vote_re);
-    if (!re_match) return;
+    const voteRe = new RegExp(`^(${Object.keys(voteTypes).join('|')})[\\s]+@(.*)`, 'i');
+    const reMatch = cmdArgs.match(voteRe);
+    if (!reMatch) return;
 
-    var server = bot.client.servers['0'];
-    var voteType = re_match[1];
+    const server = bot.client.servers['0'];
+    const voteType = reMatch[1];
 
-    var user = message.mentions[0];
+    const user = message.mentions[0];
     if (!user) return;
 
     // user validation
     // warning: assume bot is in one server only
-    if (user.username == message.author.username) {
+    if (user.username === message.author.username) {
       bot.client.reply(message, ' you can\'t start a vote against yourself, silly.');
       return;
     }
@@ -98,13 +102,14 @@ module.exports = {
     }
 
     // roles validation
-    var userRoles = getUserRoles(server, user);
+    const userRoles = getUserRoles(server, user);
     if (setIntersection(userRoles, new Set(bot.settings.voting.immuneRoles)).size > 0) {
-      bot.client.sendMessage(message.channel, `I'm afraid I can't do that, ${message.author.mention()}...`);
+      bot.client.sendMessage(message.channel,
+        `I'm afraid I can't do that, ${message.author.mention()}...`);
       return;
     }
 
     processVote(voteType, bot, message, server, user);
-  }
+  },
+};
 
-} 
