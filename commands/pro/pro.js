@@ -1,8 +1,10 @@
-//in-memory object to hold pros and terms
-var pros = {};
+let proTerms = require('./proTerms.js');
 
-function _initProsObject() {
-  proTerms = require('./proTerms.js')
+// in-memory object to hold pros and terms
+const pros = {};
+
+function initProsObject() {
+  proTerms = proTerms
     .filter(term => term.length > 0)
     .map(term => term.toLowerCase().trim());
 
@@ -11,23 +13,21 @@ function _initProsObject() {
   });
 }
 
-function _getProsOnline(server) {
-  var prosRole = server.roles.get('name', 'Pros');
-
-  var prosOnline = server.usersWithRole(prosRole)
-    .filter(pros => pros.status == 'online')
-    .map(pro => pro.username);
+function getProsOnline(server) {
+  const prosRole = server.roles.get('name', 'Pros');
+  const prosOnline = server.usersWithRole(prosRole)
+    .filter(p => p.status === 'online')
+    .map(p => p.username);
 
   return new Set(prosOnline);
 }
 
 function loadAndMatchPros(bot, cb) {
-  _initProsObject();
+  initProsObject();
 
-  var helpChannel = bot.client.channels.get('name', 'helpdirectory');
+  const helpChannel = bot.client.channels.get('name', 'helpdirectory');
 
   bot.client.getChannelLogs(helpChannel, 50, (err, messages) => {
-
     if (err) {
       console.log(err);
       cb(err, null);
@@ -53,26 +53,26 @@ function loadAndMatchPros(bot, cb) {
 module.exports = {
   usage: 'pro <topic> - list of people who knows about <topic>',
 
-  run: (bot, message, cmd_args) => {
-    if (!cmd_args) {
+  run: (bot, message, cmdArgs) => {
+    if (!cmdArgs) {
       bot.client.reply(message, 'please gimme a topic, will\'ya?');
       return;
     }
-    var lang = cmd_args.toLowerCase().trim();
-    var replyString = `Here are some pros online that can help with "${cmd_args}": `;
-    var server = bot.client.servers['0'];
+    const lang = cmdArgs.toLowerCase().trim();
+    let replyString = `Here are some pros online that can help with "${cmdArgs}": `;
+    const server = bot.client.servers['0'];
 
-    var prosOnline = _getProsOnline(server);
+    const prosOnline = getProsOnline(server);
 
     if (pros[lang] && pros[lang].length > 0) {
       pros[lang].forEach(pro => {
         if (prosOnline.has(pro.username)) {
-          replyString += '\n' + `${pro.mention}`;
+          replyString += `\n${pro.mention}`;
         }
       });
-      return bot.client.reply(message, replyString);
+      bot.client.reply(message, replyString);
     } else {
-      return bot.client.reply(message, `No pros found for ${cmd_args} :(`);
+      bot.client.reply(message, `No pros found for ${cmdArgs} :(`);
     }
   },
 
@@ -80,8 +80,8 @@ module.exports = {
     console.log('Loading pros...');
     loadAndMatchPros(bot, (err, status) => {
       if (err) console.log(err);
-      else if (status == 'Done') console.log('Done reading in pros from #helpdirectory!');
+      else if (status === 'Done') console.log('Done reading in pros from #helpdirectory!');
     });
-  }
-}
+  },
+};
 
