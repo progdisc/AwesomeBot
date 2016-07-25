@@ -1,0 +1,6 @@
+See these links for learning ReactJS/Flux/Redux:
+
+https://facebook.github.io/react/docs/getting-started.html
+
+https://www.youtube.com/watch?v=MhkGQAoc7bc&list=PLoYCgNOIyGABj2GQSlDRjgvXtqfDxKm5b
+
