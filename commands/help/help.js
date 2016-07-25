@@ -12,26 +12,35 @@ const loadHelpText = (filename) => {
 };
 
 // basic help commands
-const simpleResponses = {};
+const knownTopics = {};
 
 module.exports = {
-  usage: 'help <topic> - displays known resources about <topic>',
+  usage: [
+    'help <topic> - displays known resources about <topic>',
+    'help - list known topics',
+  ],
 
   run: (bot, message, cmdArgs) => {
     if (cmdArgs) {
-      const response = simpleResponses[cmdArgs.toLowerCase()];
+      const response = knownTopics[cmdArgs.toLowerCase()];
       bot.client.reply(message, response ||
-        "I don't know anything about that. If you have a suggestion, let us know!");
+        'I don\'t know anything about that. If you have a suggestion, let us know!');
     } else {
-      bot.client.reply(message,
-        "Awesome is my name, don't wear it out! Please give a me topic for more info.");
+      let r = 'Awesome is my name, don\'t wear it out! Please give a me topic for more info.';
+      r += '\n\nTopics I know something about:';
+      r += '\n```';
+      Object.keys(knownTopics).forEach(t => {
+        r += `\n  - ${t}`;
+      });
+      r += '\n```';
+      bot.client.reply(message, r);
     }
   },
 
   init: () => {
-    console.log('Loading help topics');
+    console.log('Loading help topics...');
     getFileList(path.join(__dirname, 'topics')).forEach(fn => {
-      simpleResponses[path.basename(fn, '.txt')] = loadHelpText(path.join(__dirname, 'topics', fn));
+      knownTopics[path.basename(fn, '.txt')] = loadHelpText(path.join(__dirname, 'topics', fn));
     });
   },
 };
