@@ -1,57 +1,58 @@
-var vm = require('vm')
+const vm = require('vm');
 
-var stringify = o => JSON.stringify(o, null, 2)
-var fixargs = args => Array.prototype.slice.call(args)
+const stringify = o => JSON.stringify(o, null, 2);
+const fixargs = args => Array.prototype.slice.call(args);
 
 function unchangable(obj, prop, value) {
   Object.defineProperty(obj, prop, {
-    enumerable: false, configurable: false, writable: false, value
-  })
-  return obj
+    enumerable: false, configurable: false, writable: false, value,
+  });
+  return obj;
 }
 
-function safer_eval(code) {
+function saferEval(...code) {
+  // log buffer to emulate console.log
+  const buffer = [];
+  function log() {
+    buffer.push(fixargs(code).map(stringify).join(' '));
+  }
+
   // global context exposed to the sandboxed code.
   // needs to be recreated every call or the context will get polluted
-  var ctx = {}
-  unchangable(ctx, 'log', log)
-  unchangable(ctx, 'console', Object.freeze({ log: log, info: log, warn: log, error: log }))
+  const ctx = {};
+  unchangable(ctx, 'log', log);
+  unchangable(ctx, 'console', Object.freeze({ log, info: log, warn: log, error: log }));
 
-
-  // log buffer to emulate console.log
-  var buffer = []
-  function log() {
-    buffer.push(fixargs(arguments).map(stringify).join(' '))
-  }
-
-  var last_expression, error
+  let lastExpression;
+  let error;
   try {
-    last_expression = vm.runInNewContext(code, ctx, {timeout: 100})
+    lastExpression = vm.runInNewContext(code, ctx, { timeout: 100 });
   } catch (e) {
-    error = e
-    last_expression = e.toString()
+    error = e;
+    lastExpression = e.toString();
   }
 
-  return {code, buffer, last_expression, error, ctx}
+  return { code, buffer, lastExpression, error, ctx };
 }
 
-var comment_multi_line = s => s.split('\n').map(line => '// ' + line).join('\n')
-function handleJSEval(bot, message, cmd_args) {
+const commentMultiLine = s => s.split('\n').map(line => `// ${line}`).join('\n');
+function handleJSEval(bot, message, cmdArgs) {
+  const code = cmdArgs;
+  const result = saferEval(code);
+  const buffer = result.buffer.length ?
+    result.buffer.map(commentMultiLine).join('\n') : '';
 
-  var code = cmd_args
-  var result = safer_eval(code)
-  var buffer = result.buffer.length ?
-    result.buffer.map(comment_multi_line).join('\n') + '\n' :
-    ''
-
-  var output = 'here\' the result:```js\n' +
-    result.code + '\n' + buffer +
-    '//=> ' + result.last_expression + '```'
-  return bot.client.reply(message, output)
+  let output = 'here\'s the result:\n';
+  output += '```js\n';
+  output += `${result.code}\n`;
+  output += `${buffer}\n`;
+  output += `//=> ${result.lastExpression}\n`;
+  output += '```';
+  return bot.client.reply(message, output);
 }
 
 module.exports = {
   usage: 'jseval <js expression> - runs <js expression>, displays the result',
 
-  run: handleJSEval
-}
+  run: handleJSEval,
+};

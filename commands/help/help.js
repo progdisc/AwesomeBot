@@ -1,26 +1,47 @@
-'use strict'
+const fs = require('fs');
+const path = require('path');
 
-const helpCommands = require('./helpText.js');
-const helpObj = {};
+const getFileList = (dirName) => {
+  const fileList = fs.readdirSync(dirName);
+  return fileList || [];
+};
+
+const loadHelpText = (filename) => {
+  const content = fs.readFileSync(filename);
+  return content || '';
+};
 
 // basic help commands
-const simpleResponses = Object.assign(
-  helpObj,
-  Object.keys(helpCommands)
-    .map(k => [`${k}`, helpCommands[k]])
-    .reduce((obj, row) => (obj[row[0]] = row[1], obj), {}));
+const knownTopics = {};
 
 module.exports = {
-  usage: 'help <topic> - displays known resources about <topic>',
+  usage: [
+    'help <topic> - displays known resources about <topic>',
+    'help - list known topics',
+  ],
 
-  run: (bot, message, cmd_args) => {
-    if (cmd_args) {
-      let response = simpleResponses[cmd_args.toLowerCase()];
-      bot.client.reply(message, response ? response :
-                "I don't know anything about that. If you have a suggestion, let us know!");
+  run: (bot, message, cmdArgs) => {
+    if (cmdArgs) {
+      const response = knownTopics[cmdArgs.toLowerCase()];
+      bot.client.reply(message, response ||
+        'I don\'t know anything about that. If you have a suggestion, let us know!');
     } else {
-      bot.client.reply(message, "Awesome is my name, don't wear it out! Please give a me topic for more info.");
+      let r = 'Awesome is my name, don\'t wear it out! Please give a me topic for more info.';
+      r += '\n\nTopics I know something about:';
+      r += '\n```';
+      Object.keys(knownTopics).forEach(t => {
+        r += `\n  - ${t}`;
+      });
+      r += '\n```';
+      bot.client.reply(message, r);
     }
-  }
-}
+  },
+
+  init: () => {
+    console.log('Loading help topics...');
+    getFileList(path.join(__dirname, 'topics')).forEach(fn => {
+      knownTopics[path.basename(fn, '.txt')] = loadHelpText(path.join(__dirname, 'topics', fn));
+    });
+  },
+};
 

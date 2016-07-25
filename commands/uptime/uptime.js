@@ -1,31 +1,34 @@
-'use strict'
+const startTime = new Date();
+
+const getUptime = () => {
+  const now = new Date();
+  let diff = Math.abs(now - startTime);
+
+  const h = Math.floor(diff / 1000 / 60 / 60);
+  diff -= h * 1000 * 60 * 60;
+
+  const m = Math.floor(diff / 1000 / 60);
+  diff -= m * 1000 * 60;
+
+  const s = Math.floor(diff / 1000);
+  diff -= s * 1000;
+
+  const ms = diff;
+
+  let output = '';
+  if (h > 0) output += `${h} hours, `;
+  if (m > 0) output += `${m} minutes, `;
+  if (s > 0) output += `${s} seconds, `;
+  output += `${ms} milliseconds`;
+
+  return output;
+};
 
 module.exports = {
   usage: 'uptime - prints my uptime',
 
-  run: (bot, message, cmd_args) => {
-    bot.client.reply(message, 'uptime: ' + getUptime(Date.now() - start_time))
-  }
-}
-
-const start_time = Date.now()
-
-const magnitudes = [
-  ['days', 1000 * 60 * 60 * 24],
-  ['hours', 1000 * 60 * 60],
-  ['minutes', 1000 * 60],
-  ['seconds', 1000],
-]
-
-const LABEL = 0
-const VALUE = 1
-
-const getUptime = diff =>
-magnitudes.map(function(m) {
-  if (diff / m[VALUE] > 1) {
-    let mdiff = diff / m[VALUE] | 0
-    diff -= mdiff * m[VALUE]
-    return mdiff + ' ' + m[LABEL]
-  }
-}).filter(x => !!x).join(', ')
+  run: (bot, message) => {
+    bot.client.reply(message, `uptime: ${getUptime()}`);
+  },
+};
 

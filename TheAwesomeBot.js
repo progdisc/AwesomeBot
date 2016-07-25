@@ -1,122 +1,117 @@
-var path = require('path');
-var Discord = require('discord.js');
+const path = require('path');
+const Discord = require('discord.js');
+const Settings = require('./settings.json');
 
-function TheAwesomeBot(token, discord_opt) {
-  this.token = token;
-  this.client = new Discord.Client(discord_opt || { autoReconnect: true });
-  this.settings = require('./settings.json');
-  this.commands = {};
-  this.usageList = '';
+class TheAwesomeBot {
+  constructor(token, discordOpt) {
+    this.token = token;
+    this.client = new Discord.Client(discordOpt || { autoReconnect: true });
+    this.settings = Settings;
+    this.commands = {};
+    this.usageList = '';
 
-  // store the RE as they're expensive to create
-  this.cmd_re = new RegExp(`^${this.settings.bot_cmd}[\\s]+([^ ]*)[\\s]*(.*)[\\s]*`, 'i');
-};
+    // store the RE as they're expensive to create
+    this.cmd_re = new RegExp(`^${this.settings.bot_cmd}[\\s]+([^ ]*)[\\s]*(.*)[\\s]*`, 'i');
+  }
 
-TheAwesomeBot.prototype.onMessage = function () {
-  var instance = this;
-  return (function (message) {
-    // don't respond to own messages
-    if (instance.client.user.username === message.author.username)
-      return;
-
-    // check if message is a command
-    var cmd_match = message.cleanContent.match(instance.cmd_re);
-
-    // not a known command
-    if (!cmd_match || Object.keys(instance.commands).indexOf(cmd_match[1]) === -1) {
-
-      if (message.content.match(new RegExp(`^${instance.settings.bot_cmd}[\\s]*( .*)?$`, 'i'))) {
-        var helpText = 'maybe try these valid commands? *kthnxbye!*\n\n```';
-        helpText += instance.usageList;
-        helpText += '```';
-        instance.client.reply(message, helpText);
+  onMessage() {
+    return (message => {
+      // don't respond to own messages
+      if (this.client.user.username === message.author.username) {
+        return;
       }
 
-      return;
-    }
+      // check if message is a command
+      const cmdMatch = message.cleanContent.match(this.cmd_re);
 
-    // process commands
-    var cmd = cmd_match[1];
-    var cmd_args = cmd_match[2].trim();
-
-    instance.commands[cmd].run(instance, message, cmd_args);
-  });
-};
-
-TheAwesomeBot.prototype.onReady = function () {
-  var instance = this;
-  return (function () {
-    console.log('\nConnected to discord server!');
-
-    console.log('Running initializations...');
-    for (var cmd in instance.commands) {
-      if (typeof instance.commands[cmd].init == 'function') {
-        instance.commands[cmd].init(instance);
+      // not a known command
+      if (!cmdMatch || Object.keys(this.commands).indexOf(cmdMatch[1]) === -1) {
+        if (message.content.match(new RegExp(`^${this.settings.bot_cmd}[\\s]*( .*)?$`, 'i'))) {
+          let helpText = 'maybe try these valid commands? *kthnxbye!*\n\n```';
+          helpText += this.usageList;
+          helpText += '```';
+          this.client.reply(message, helpText);
+        }
+        return;
       }
-    };
-  });
-};
 
-TheAwesomeBot.prototype.serverNewMember = function () {
-  var instance = this;
-  return (function (server, user) {
-    instance.client.sendMessage(user, instance.usageList);
-  });
-};
+      // process commands
+      const cmd = cmdMatch[1];
+      const cmdArgs = cmdMatch[2].trim();
 
-TheAwesomeBot.prototype.onDisconnected = function () {
-  return (function () {
-    console.warn('Bot has been disconnected from server...');
-  });
-};
+      this.commands[cmd].run(this, message, cmdArgs);
+    });
+  }
 
-TheAwesomeBot.prototype.onError = function () {
-  return (function (err) {
-    console.error('error: ', e);
-    console.error(e.trace);
-  });
-};
+  onReady() {
+    return (() => {
+      console.log('\nConnected to discord server!');
 
-TheAwesomeBot.prototype.loadCommands = function (cmdList) {
-  var instance = this;
-  instance.usageList = '';
-  cmdList.forEach(cmd => {
-    var fullpath = path.join(__dirname, 'commands', cmd, `${cmd}.js`);
-    var script = require(fullpath);
-    instance.commands[cmd] = script;
-
-    var usageObj = script.usage;
-    if (usageObj) {
-      var usageStrs = [];
-      if (Array.isArray(usageObj)) {
-        usageObj.forEach(u => usageStrs.push(u));
-      } else {
-      usageStrs.push(usageObj.toString());
-      }
-      
-      usageStrs.forEach(u => {
-        instance.usageList += `\n- ${instance.settings.bot_cmd} ${u}`
+      console.log('Running initializations...');
+      Object.keys(this.commands).forEach(cmd => {
+        if (typeof this.commands[cmd].init === 'function') {
+          this.commands[cmd].init(this);
+        }
       });
-    }
-  });
-};
+    });
+  }
 
-TheAwesomeBot.prototype.init = function () {
-  // load commands
-  console.log('Loading commands...');
-  this.loadCommands(this.settings.commands);
+  serverNewMember() {
+    return ((server, user) => {
+      this.client.sendMessage(user, this.usageList);
+    });
+  }
 
-  // setup events
-  console.log('Setting up event bindings...');
-  this.client
-    .on('message', this.onMessage())
-    .on('ready', this.onReady())
-    .on('serverNewMember', this.serverNewMember())
-    .on('disconnected', this.onDisconnected())
-    .on('error', this.onError());
+  onDisconnected() {
+    return (() =>
+      console.warn('Bot has been disconnected from server...'));
+  }
 
-  console.log('Connecting...');
-  this.client.loginWithToken(this.token, this.discord_opt);
-};
+  onError() {
+    return ((err) => {
+      console.error('error: ', err);
+      console.error(err.trace);
+    });
+  }
+
+  loadCommands(cmdList) {
+    this.usageList = '';
+    cmdList.forEach(cmd => {
+      const fullpath = path.join(__dirname, 'commands', cmd, `${cmd}.js`);
+      const script = require(fullpath); // eslint-disable-line global-require
+      this.commands[cmd] = script;
+
+      const usageObj = script.usage;
+      if (usageObj) {
+        const usageStrs = [];
+        if (Array.isArray(usageObj)) {
+          usageObj.forEach(u => usageStrs.push(u));
+        } else {
+          usageStrs.push(usageObj.toString());
+        }
+
+        usageStrs.forEach(u => (this.usageList += `\n- ${this.settings.bot_cmd} ${u}`));
+      }
+    });
+  }
+
+  init() {
+    // load commands
+    console.log('Loading commands...');
+    this.loadCommands(this.settings.commands);
+
+    // setup events
+    console.log('Setting up event bindings...');
+    this.client
+      .on('ready', this.onReady())
+      .on('serverNewMember', this.serverNewMember())
+      .on('message', this.onMessage())
+      .on('error', this.onError());
+
+    console.log('Connecting...');
+    this.client.loginWithToken(this.token, this.discord_opt);
+  }
+}
 
 module.exports = TheAwesomeBot;
+

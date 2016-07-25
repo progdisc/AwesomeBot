@@ -1,0 +1,10 @@
+{
+  "env": {
+    "node": true
+  },
+  "rules": {
+    "no-console": 0
+  },
+  "extends": "airbnb",
+  "installedESLint": true
+}
