@@ -9,14 +9,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/fzxt/AwesomeBot.git"
+        "url": "git+https://github.com/rgoliveira/AwesomeBot.git"
     },
     "author": "",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/fzxt/AwesomeBot/issues"
+        "url": "https://github.com/rgoliveira/AwesomeBot/issues"
     },
-    "homepage": "https://github.com/fzxt/AwesomeBot",
+    "homepage": "https://github.com/rgoliveira/AwesomeBot",
     "dependencies": {
         "discord.js": "^8.0.0"
     }
