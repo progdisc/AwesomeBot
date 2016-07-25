@@ -1,4 +1,4 @@
-# AwesomeBot [![status](https://travis-ci.org/fzxt/AwesomeBot.svg?branch=master)](https://travis-ci.org/fzxt/AwesomeBot)
+# AwesomeBot [![Build Status](https://travis-ci.org/rgoliveira/AwesomeBot.svg?branch=master)](https://travis-ci.org/rgoliveira/AwesomeBot)
 
 ## How to run it
 First, make sure you have the latest version of [Node.js](https://nodejs.org/) and [npm](https://github.com/npm/npm).
