@@ -10,11 +10,11 @@ function unchangable(obj, prop, value) {
   return obj;
 }
 
-function saferEval(...code) {
+function saferEval(code) {
   // log buffer to emulate console.log
   const buffer = [];
   function log() {
-    buffer.push(fixargs(code).map(stringify).join(' '));
+    buffer.push(fixargs(arguments).map(stringify).join(' '));
   }
 
   // global context exposed to the sandboxed code.
