@@ -1,14 +1,15 @@
 const vm = require('vm');
 
-const stringify = o => JSON.stringify(o, null, 2);
-const fixargs = args => Array.prototype.slice.call(args);
+const stringify = o =>
+  JSON.stringify(o, null, 2);
 
-function unchangable(obj, prop, value) {
+const fixargs = args =>
+  Array.prototype.slice.call(args);
+
+const unchangable = (obj, prop, value) =>
   Object.defineProperty(obj, prop, {
     enumerable: false, configurable: false, writable: false, value,
   });
-  return obj;
-}
 
 function saferEval(code) {
   // log buffer to emulate console.log
@@ -53,6 +54,5 @@ function handleJSEval(bot, message, cmdArgs) {
 
 module.exports = {
   usage: 'jseval <js expression> - runs <js expression>, displays the result',
-
   run: handleJSEval,
 };
