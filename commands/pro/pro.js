@@ -14,7 +14,7 @@ function initProsObject() {
 }
 
 function getProsOnline(server) {
-  const prosRole = server.roles.get('name', 'Pros');
+  const prosRole = server.roles.find('name', 'Pros');
   const prosOnline = server.usersWithRole(prosRole)
     .filter(p => p.status === 'online')
     .map(p => p.username);
@@ -25,28 +25,26 @@ function getProsOnline(server) {
 function loadAndMatchPros(bot, cb) {
   initProsObject();
 
-  const helpChannel = bot.client.channels.get('name', 'helpdirectory');
+  const helpChannel = bot.client.channels.find('name', 'helpdirectory');
 
-  bot.client.getChannelLogs(helpChannel, 50, (err, messages) => {
-    if (err) {
-      console.log(err);
-      cb(err, null);
-    }
-
+  helpChannel.fetchMessages({limit: 50})
+  .then(messages => {
     messages.forEach((messageObj) => {
       proTerms.forEach((term) => {
         if (messageObj.content.toLowerCase().includes(term)) {
-          pros[term].push(
-            {
+          pros[term].push({
               username: messageObj.author.username,
-              mention: messageObj.author.mention(),
-            }
-          );
+              mention: messageObj.author.toString(), // mention() ?
+          });
         }
       });
     });
 
     cb(null, 'Done');
+  })
+  .catch(err => {
+      console.error(err);
+      cb(err, null);
   });
 }
 
@@ -55,7 +53,7 @@ module.exports = {
 
   run: (bot, message, cmdArgs) => {
     if (!cmdArgs) {
-      bot.client.reply(message, 'please gimme a topic, will\'ya?');
+      message.channel.sendMessage('please gimme a topic, will\'ya?');
       return;
     }
     const lang = cmdArgs.toLowerCase().trim();
@@ -70,9 +68,10 @@ module.exports = {
           replyString += `\n${pro.mention}`;
         }
       });
-      bot.client.reply(message, replyString);
+    
+      message.channel.sendMessage(replyString);
     } else {
-      bot.client.reply(message, `No pros found for ${cmdArgs} :(`);
+      message.channel.sendMessage(`No pros found for ${cmdArgs} :(`);
     }
   },
 

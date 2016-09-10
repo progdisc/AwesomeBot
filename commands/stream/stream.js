@@ -67,11 +67,11 @@ function handleCreateStreamChannel(bot, message, args) {
   let [, topic, link, user] = args.split(' '); // eslint-disable-line prefer-const
 
   if (!topic || !link) {
-    return bot.client.reply(message, 'err, please provide topic and link!');
+    return message.channel.sendMessage('err, please provide topic and link!');
   }
 
   if (link.indexOf('http://') === -1 && link.indexOf('https://') === -1) {
-    return bot.client.reply(message, 'a valid link must be supplied (starting with http/https)!');
+    return message.channel.sendMessage('a valid link must be supplied (starting with http/https)!');
   }
 
   user = message.mentions[0];
@@ -105,14 +105,14 @@ function handleCreateStreamChannel(bot, message, args) {
       }
     });
 
-    return bot.client.sendMessage(message.channel, 'Channel already exists.. Updated stream link!');
+    return message.channel.sendMessage('Channel already exists.. Updated stream link!');
   }
   return createChannel(channelFormat, bot, message, topic, user)
     .then((createdChannel) => setTopicToLink(createdChannel, link, bot, topic, user))
     .then((channelWithTopic) =>
-      bot.client.reply(message.channel, `Created ${channelWithTopic.mention()}!`))
+      message.channel.sendMessage(`Created ${channelWithTopic.mention()}!`))
     .catch((errMessage) => {
-      bot.client.reply(message.channel, `Sorry, could not create channel (${errMessage})`);
+      message.channel.sendMessage(`Sorry, could not create channel (${errMessage})`);
     });
 }
 
@@ -136,10 +136,10 @@ function handleRemove(bot, message) {
       deleteStreamInObject(topic, user);
 
       bot.client.deleteChannel(channelToDelete, (err) => {
-        if (err) bot.client.sendMessage(message.channel, 'Sorry, could not delete channel');
+        if (err) message.channel.sendMessage('Sorry, could not delete channel');
       });
 
-      bot.client.sendMessage(message.channel,
+      message.channel.sendMessage(
         `Removed ${user} from active streamers list and deleted #${channelToDelete.name}`);
     } else {
       // user has no stream in this topic
@@ -170,11 +170,11 @@ function listStreams(bot, message) {
     });
   });
 
-  return bot.client.sendMessage(message.channel, buildMessage);
+  return message.channel.sendMessage(buildMessage);
 }
 
 function autoRemove(bot) {
-  const channels = bot.client.servers[0].channels;
+  const channels = bot.client.guilds.first().channels;
 
   Object.keys(channels).forEach(key => {
     if (channels[key] && channels[key].name !== undefined) {
@@ -187,6 +187,7 @@ function autoRemove(bot) {
       }
     }
   });
+
   if (Object.keys(joinMeStreams).length > 0) {
     Object.keys(joinMeStreams).forEach(topic => delete joinMeStreams[topic]);
   }
@@ -213,7 +214,7 @@ function handleJoinMeCommands(bot, message, cmdArgs) {
       if (isAdminOrMod(bot.client.servers['0'], message.author)) {
         autoRemove(bot);
       } else {
-        bot.client.reply(message, 'Only Admins or Mods can delete all stream channels');
+        message.channel.sendMessage('Only Admins or Mods can delete all stream channels');
       }
       break;
 

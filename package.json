@@ -1,31 +1,31 @@
 {
-    "name": "TheAwesomeBot",
-    "version": "1.0.0",
-    "description": "",
-    "main": "TheAwesomeBot.js",
-    "scripts": {
-        "start": "node start.js",
-        "test": "echo \"No tests yet :( But let it build!\" && exit 0",
-        "lint": "eslint"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/rgoliveira/AwesomeBot.git"
-    },
-    "author": "",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/rgoliveira/AwesomeBot/issues"
-    },
-    "homepage": "https://github.com/rgoliveira/AwesomeBot",
-    "dependencies": {
-        "discord.js": "^8.0.0"
-    },
-    "devDependencies": {
-        "eslint": "^3.0.1",
-        "eslint-config-airbnb": "^9.0.1",
-        "eslint-plugin-import": "^1.10.3",
-        "eslint-plugin-jsx-a11y": "^2.0.1",
-        "eslint-plugin-react": "^5.2.2"
-    }
+  "name": "TheAwesomeBot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "TheAwesomeBot.js",
+  "scripts": {
+    "start": "node start.js",
+    "test": "echo \"No tests yet :( But let it build!\" && exit 0",
+    "lint": "eslint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rgoliveira/AwesomeBot.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rgoliveira/AwesomeBot/issues"
+  },
+  "homepage": "https://github.com/rgoliveira/AwesomeBot",
+  "dependencies": {
+    "discord.js": "^9.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^3.0.1",
+    "eslint-config-airbnb": "^9.0.1",
+    "eslint-plugin-import": "^1.10.3",
+    "eslint-plugin-jsx-a11y": "^2.0.1",
+    "eslint-plugin-react": "^5.2.2"
+  }
 }

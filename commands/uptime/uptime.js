@@ -28,7 +28,7 @@ module.exports = {
   usage: 'uptime - prints my uptime',
 
   run: (bot, message) => {
-    bot.client.reply(message, `uptime: ${getUptime()}`);
+    message.channel.sendMessage(`uptime: ${getUptime()}`);
   },
 };
 

@@ -30,7 +30,7 @@ class TheAwesomeBot {
           let helpText = 'maybe try these valid commands? *kthnxbye!*\n\n```';
           helpText += this.usageList;
           helpText += '```';
-          this.client.reply(message, helpText);
+          message.channel.sendMessage(helpText);
         }
         return;
       }
@@ -46,7 +46,6 @@ class TheAwesomeBot {
   onReady() {
     return (() => {
       console.log('\nConnected to discord server!');
-
       console.log('Running initializations...');
       Object.keys(this.commands).forEach(cmd => {
         if (typeof this.commands[cmd].init === 'function') {
@@ -109,7 +108,7 @@ class TheAwesomeBot {
       .on('error', this.onError());
 
     console.log('Connecting...');
-    this.client.loginWithToken(this.token, this.discord_opt);
+    this.client.login(this.token);
   }
 }
 

@@ -23,17 +23,15 @@ module.exports = {
   run: (bot, message, cmdArgs) => {
     if (cmdArgs) {
       const response = knownTopics[cmdArgs.toLowerCase()];
-      bot.client.reply(message, response ||
+      message.channel.sendMessage(response ||
         'I don\'t know anything about that. If you have a suggestion, let us know!');
     } else {
       let r = 'Awesome is my name, don\'t wear it out! Please give a me topic for more info.';
       r += '\n\nTopics I know something about:';
       r += '\n```';
-      Object.keys(knownTopics).forEach(t => {
-        r += `\n  - ${t}`;
-      });
+      r += Object.keys(knownTopics).map(t => `\n  - ${t}`).join('');
       r += '\n```';
-      bot.client.reply(message, r);
+      message.channel.sendMessage(r);
     }
   },
 

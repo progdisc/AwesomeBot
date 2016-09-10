@@ -40,16 +40,13 @@ const commentMultiLine = s => s.split('\n').map(line => `// ${line}`).join('\n')
 function handleJSEval(bot, message, cmdArgs) {
   const code = cmdArgs;
   const result = saferEval(code);
-  const buffer = result.buffer.length ?
-    result.buffer.map(commentMultiLine).join('\n') : '';
+  const buffer = result.buffer.length ? result.buffer.map(commentMultiLine).join('\n') : '';
 
   let output = 'here\'s the result:\n';
   output += '```js\n';
-  output += `${result.code}\n`;
-  output += `${buffer}\n`;
-  output += `//=> ${result.lastExpression}\n`;
+  output += `${result.code}\n${buffer}\n//=> ${result.lastExpression}\n`;
   output += '```';
-  return bot.client.reply(message, output);
+  return message.channel.sendMessage(output);
 }
 
 module.exports = {

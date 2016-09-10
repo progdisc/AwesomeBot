@@ -94,7 +94,7 @@ module.exports = {
     // user validation
     // warning: assume bot is in one server only
     if (user.username === message.author.username) {
-      bot.client.reply(message, ' you can\'t start a vote against yourself, silly.');
+      message.channel.sendMessage(' you can\'t start a vote against yourself, silly.');
       return;
     }
     if (!user) {
@@ -104,7 +104,7 @@ module.exports = {
     // roles validation
     const userRoles = getUserRoles(server, user);
     if (setIntersection(userRoles, new Set(bot.settings.voting.immuneRoles)).size > 0) {
-      bot.client.sendMessage(message.channel,
+      message.channel.sendMessage(
         `I'm afraid I can't do that, ${message.author.mention()}...`);
       return;
     }
