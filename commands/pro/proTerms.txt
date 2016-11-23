@@ -1,5 +1,5 @@
-.NET
-ASP.NET
+.NET|ASP.NET
+C
 C#
 C++
 CSS
@@ -7,7 +7,7 @@ Delphi
 Groovy
 HTML
 Java
-JavaScript
+JavaScript|JS
 LaTex
 Mongo
 Perl
@@ -16,5 +16,5 @@ R
 Ruby
 Rust
 SQL
-SQL
 Splunk
+Whitespace

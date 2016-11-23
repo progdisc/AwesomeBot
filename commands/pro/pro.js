@@ -1,23 +1,25 @@
 let proTerms = require('./proTerms.js');
+const proRegs = {};
 
 // in-memory object to hold pros and terms
 const pros = {};
+const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 
 function initProsObject() {
   proTerms = proTerms
-    .filter(term => term.length > 0)
-    .map(term => term.toLowerCase().trim());
+    .filter(terms => terms[0].length > 0);
 
-  proTerms.forEach(term => {
-    pros[term] = [];
+  proTerms.forEach(termList => {
+    pros[termList[0]] = [];
+    const list = termList.join('|').toLowerCase().split('').map(c => alphabet.includes(c)||c=='|'?c:'\\'+c).join('');
+    proRegs[termList[0]] = new RegExp(`(^|[^a-z])(${list})($|[^a-z])`, 'i');
   });
 }
 
-function getProsOnline(server) {
-  const prosRole = server.roles.find('name', 'Pros');
-  const prosOnline = server.usersWithRole(prosRole)
-    .filter(p => p.status === 'online')
-    .map(p => p.username);
+function getProsOnline(guild) {
+  const prosOnline = guild.members.filterArray(member => member.roles.find('name', 'Pros'))
+    .filter(p => p.presence.status === 'online' || p.presence.status === 'idle')
+    .map(p => p.user.username);
 
   return new Set(prosOnline);
 }
@@ -27,12 +29,12 @@ function loadAndMatchPros(bot, cb) {
 
   const helpChannel = bot.client.channels.find('name', 'helpdirectory');
 
-  helpChannel.fetchMessages({limit: 50})
+  helpChannel.fetchMessages({limit: 100})
   .then(messages => {
     messages.forEach((messageObj) => {
-      proTerms.forEach((term) => {
-        if (messageObj.content.toLowerCase().includes(term)) {
-          pros[term].push({
+      proTerms.forEach(termList => {
+        if (messageObj.content.toLowerCase().match(proRegs[termList[0]])) {
+          pros[termList[0]].push({
               username: messageObj.author.username,
               mention: messageObj.author.toString(), // mention() ?
           });
@@ -56,11 +58,16 @@ module.exports = {
       message.channel.sendMessage('please gimme a topic, will\'ya?');
       return;
     }
-    const lang = cmdArgs.toLowerCase().trim();
-    let replyString = `Here are some pros online that can help with "${cmdArgs}": `;
-    const server = bot.client.servers['0'];
+    let lang = cmdArgs.toLowerCase().trim();
+    const guild = bot.client.guilds.first();
 
-    const prosOnline = getProsOnline(server);
+    proTerms.forEach(termList => {
+      if (termList.map(t => t.toLowerCase()).includes(lang)) lang = termList[0];
+    });
+
+    let replyString = `Here are some pros online that can help with **${lang}**: `;
+
+    const prosOnline = getProsOnline(guild);
 
     if (pros[lang] && pros[lang].length > 0) {
       pros[lang].forEach(pro => {

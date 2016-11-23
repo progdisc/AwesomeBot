@@ -1,11 +1,11 @@
-function handleKick(bot, user, server) {
-  bot.client.kickMember(user, server, (err) => {
+function handleKick(bot, member, guild) {
+  member.kick().catch((err) => {
     if (err) console.log(err);
   });
 }
 
-function handleMute(bot, user, server) {
-  bot.client.muteMember(user, server, (err) => {
+function handleMute(bot, member, guild) {
+  member.setMute(true).catch((err) => {
     if (err) console.log(err);
   });
 }
@@ -28,32 +28,27 @@ Object.keys(voteTypes).forEach(k => {
   currentVotes[k] = {};
 });
 
-function getUserRoles(server, user) {
-  return new Set(server.rolesOfUser(user.id).map(r => r.name));
-}
-
 function setIntersection(setA, setB) {
   return new Set([...setA].filter(x => setB.has(x)));
 }
 
-function processVote(type, bot, message, server, user) {
-  let voting = currentVotes[type][user.username];
+function processVote(type, bot, message, guild, member) {
+  let voting = currentVotes[type][member.user.username];
 
   if (!voting) {
     // sets a timeout for this voting
     const timeoutClj = () => {
-      bot.client.sendMessage(message.channel,
-        `Vote to ${type} ${user.mention()} has timed out. Phew!`);
-      delete currentVotes[type][user.username];
+      message.channel.sendMessage(`Vote to ${type} ${member} has timed out. Phew!`);
+      delete currentVotes[type][member.user.username];
     };
     const timeoutObj = setTimeout(timeoutClj, bot.settings.voting.timeout_in_minutes * 1000 * 60);
 
     voting = {
-      username: user.username,
+      username: member.user.username,
       votes: [],
       timeout: timeoutObj,
     };
-    currentVotes[type][user.username] = voting;
+    currentVotes[type][member.user.username] = voting;
   }
 
   // ignore votes by the same user
@@ -63,14 +58,13 @@ function processVote(type, bot, message, server, user) {
   voting.votes.push(message.author.username);
   if (voting.votes.length >= bot.settings.voting.voteThreshold) {
     clearTimeout(voting.timeout);
-    bot.client.sendMessage(message.channel,
-      `Sorry, ${user.mention()}, but their wish is my command!`);
-    voteTypes[type](bot, user, server);
-    delete currentVotes[type][user.username];
+    message.channel.sendMessage(`Sorry, ${member}, but their wish is my command!`);
+    voteTypes[type](bot, member, guild);
+    delete currentVotes[type][member.user.username];
   } else {
     let msg = `[${voting.votes.length}/${bot.settings.voting.voteThreshold}]`;
-    msg += ` votes to ${type} ${user.mention()}!`;
-    bot.client.sendMessage(message.channel, msg);
+    msg += ` votes to ${type} ${member}!`;
+    message.channel.sendMessage(msg);
   }
 }
 
@@ -78,38 +72,40 @@ module.exports = {
   usage: `vote <${Object.keys(voteTypes).join('|')}> <@user> - start a vote against <@user>`,
 
   run: (bot, message, cmdArgs) => {
-    if (bot.client.user.username === message.author.username) return;
 
     // command validation
-    const voteRe = new RegExp(`^(${Object.keys(voteTypes).join('|')})[\\s]+@(.*)`, 'i');
+    const voteRe = new RegExp(`^(${Object.keys(voteTypes).join('|')})`, 'i');
     const reMatch = cmdArgs.match(voteRe);
-    if (!reMatch) return;
+    if (!reMatch) return true;
 
-    const server = bot.client.servers['0'];
+    const guild = message.channel.guild;
     const voteType = reMatch[1];
 
-    const user = message.mentions[0];
-    if (!user) return;
-
-    // user validation
-    // warning: assume bot is in one server only
-    if (user.username === message.author.username) {
-      message.channel.sendMessage(' you can\'t start a vote against yourself, silly.');
+    const user = message.mentions.users.first();
+    if (!user) {
+      message.channel.sendMessage('You need to specify a valid member!');
       return;
     }
-    if (!user) {
+    const member = guild.members.get(user.id);
+
+    // user validation
+    // warning: assume bot is in one guild only
+    if (user === message.author) {
+      message.channel.sendMessage('You can\'t start a vote against yourself, silly.');
+      return;
+    } else if (user === bot.client.user) {
+      message.channel.sendMessage(`I'm sorry ${message.author}, I'm afraid I can't let you do that.,`)
       return;
     }
 
     // roles validation
-    const userRoles = getUserRoles(server, user);
+    const userRoles = new Set(member.roles.array().map(r => r.name));
     if (setIntersection(userRoles, new Set(bot.settings.voting.immuneRoles)).size > 0) {
-      message.channel.sendMessage(
-        `I'm afraid I can't do that, ${message.author.mention()}...`);
+      message.channel.sendMessage(`try.is('nice') === true`);
       return;
     }
 
-    processVote(voteType, bot, message, server, user);
+    processVote(voteType, bot, message, guild, member);
   },
 };
 

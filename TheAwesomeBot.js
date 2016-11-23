@@ -11,7 +11,7 @@ class TheAwesomeBot {
     this.usageList = '';
 
     // store the RE as they're expensive to create
-    this.cmd_re = new RegExp(`^${this.settings.bot_cmd}[\\s]+([^ ]*)[\\s]*(.*)[\\s]*`, 'i');
+    this.cmd_re = new RegExp(`^${this.settings.bot_cmd}\\s+([^\\s]+)\\s*([^]*)\\s*`, 'i');
   }
 
   onMessage() {
@@ -39,7 +39,14 @@ class TheAwesomeBot {
       const cmd = cmdMatch[1];
       const cmdArgs = cmdMatch[2].trim();
 
-      this.commands[cmd].run(this, message, cmdArgs);
+      const showUsage = this.commands[cmd].run(this, message, cmdArgs);
+      if (showUsage) {
+        message.channel.sendMessage('```\n'+
+          (typeof this.commands[cmd].usage == 'string' ?
+            this.commands[cmd].usage :
+            this.commands[cmd].usage.join('\n'))+
+        '\n```');
+      }
     });
   }
 

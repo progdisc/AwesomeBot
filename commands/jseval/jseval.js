@@ -38,7 +38,8 @@ function saferEval(code) {
 
 const commentMultiLine = s => s.split('\n').map(line => `// ${line}`).join('\n');
 function handleJSEval(bot, message, cmdArgs) {
-  const code = cmdArgs;
+  const code = cmdArgs.split('\n').filter(line => !line.startsWith('```')).join('\n');
+  if (!code.length) return true;
   const result = saferEval(code);
   const buffer = result.buffer.length ? result.buffer.map(commentMultiLine).join('\n') : '';
 
