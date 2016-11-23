@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/rgoliveira/AwesomeBot",
   "dependencies": {
-    "discord.js": "^9.1.1"
+    "discord.js": "^10.0.1"
   },
   "devDependencies": {
     "eslint": "^3.0.1",

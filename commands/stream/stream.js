@@ -26,9 +26,9 @@ joinMeStreams: {
 // in memory object containing join.me stream
 const joinMeStreams = {};
 
-function isAdminOrMod(server, user) {
+function isAdminOrMod(guild, user) {
   const immuneRoles = new Set(Settings.voting.immuneRoles);
-  const userRoles = new Set(server.rolesOfUser(user.id).map(r => r.name));
+  const userRoles = new Set(user.roles.array().map(r => r.name));
   const setIntersection = [...userRoles].filter(r => immuneRoles.has(r));
   return setIntersection.length > 0;
 }
@@ -45,8 +45,7 @@ function putStreamInObject(topic, user, link, description) {
 
 function createChannel(title, bot, message, topic, user) {
   return new Promise((resolve, reject) => {
-    bot.client.createChannel(message.server, title, (err, channel) => {
-      if (err) reject(new Error('An error occured in creating a channel'));
+    message.guild.createChannel(title, 'text').then(channel => {
       joinMeStreams[topic][user].channel = channel;
       resolve(channel);
     });
@@ -55,8 +54,7 @@ function createChannel(title, bot, message, topic, user) {
 
 function setTopicToLink(channel, link, bot, topic, user) {
   return new Promise((resolve, reject) => {
-    bot.client.setChannelTopic(channel, link, (err) => {
-      if (err) reject(new Error('An error occured in setting a topic to the channel'));
+    channel.setTopic(link).then(() => {
       joinMeStreams[topic][user].channel = channel;
       resolve(channel);
     });
@@ -74,7 +72,7 @@ function handleCreateStreamChannel(bot, message, args) {
     return message.channel.sendMessage('a valid link must be supplied (starting with http/https)!');
   }
 
-  user = message.mentions[0];
+  user = message.mentions.users.first();
   if (user) {
     // Creating a channel for someone else
     // The keys in the topics object are username mention id
@@ -84,33 +82,28 @@ function handleCreateStreamChannel(bot, message, args) {
     user = message.author;
   }
   const channelFormat = `stream_${user.username}_${topic}`;
-  user = user.mention();
 
   const defaultDescription =
     `${user} is streaming about ${topic}`;
 
-  putStreamInObject(topic, user, link, defaultDescription);
+  putStreamInObject(topic, user.id, link, defaultDescription);
 
   const existingChannel = bot.client.channels.get('name', channelFormat);
 
   if (existingChannel) {
-    joinMeStreams[topic][user].channel = existingChannel;
-    joinMeStreams[topic][user].link = link;
+    joinMeStreams[topic][user.id].channel = existingChannel;
+    joinMeStreams[topic][user.id].link = link;
 
-    bot.client.setChannelTopic(existingChannel, link, (err) => {
-      if (err) {
-        console.error(err);
-        bot.client.reply(message,
-          'There was an error setting the existings channel topic!');
-      }
+    existingChannel.setTopic(link).catch(err => {
+      existingChannel.sendMessage('There was an error setting the existings channel topic!');
     });
 
     return message.channel.sendMessage('Channel already exists.. Updated stream link!');
   }
-  return createChannel(channelFormat, bot, message, topic, user)
-    .then((createdChannel) => setTopicToLink(createdChannel, link, bot, topic, user))
+  return createChannel(channelFormat, bot, message, topic, user.id)
+    .then((createdChannel) => setTopicToLink(createdChannel, link, bot, topic, user.id))
     .then((channelWithTopic) =>
-      message.channel.sendMessage(`Created ${channelWithTopic.mention()}!`))
+      message.channel.sendMessage(`Created ${channelWithTopic}!`))
     .catch((errMessage) => {
       message.channel.sendMessage(`Sorry, could not create channel (${errMessage})`);
     });
@@ -125,7 +118,7 @@ function deleteStreamInObject(topic, user) {
 }
 
 function handleRemove(bot, message) {
-  const user = message.mentions[0];
+  const user = message.mentions.users.first();
 
   const topics = Object.keys(joinMeStreams);
 
@@ -135,15 +128,15 @@ function handleRemove(bot, message) {
 
       deleteStreamInObject(topic, user);
 
-      bot.client.deleteChannel(channelToDelete, (err) => {
-        if (err) message.channel.sendMessage('Sorry, could not delete channel');
+      channelToDelete.delete().catch(err => {
+        message.channel.sendMessage('Sorry, could not delete channel');
       });
 
       message.channel.sendMessage(
         `Removed ${user} from active streamers list and deleted #${channelToDelete.name}`);
     } else {
       // user has no stream in this topic
-      // return bot.client.sendMessage(message.channel, `Could not find ${user}`);
+      // return message.channel.sendMessage(`Could not find ${user}`);
     }
   });
 }
@@ -154,7 +147,7 @@ function listStreams(bot, message) {
   const topics = Object.keys(joinMeStreams);
 
   if (topics.length === 0) {
-    return bot.client.sendMessage(message.channel, 'No streams! :frowning:');
+    return message.channel.sendMessage('No streams! :frowning:');
   }
 
   topics.forEach(topic => {
@@ -176,12 +169,11 @@ function listStreams(bot, message) {
 function autoRemove(bot) {
   const channels = bot.client.guilds.first().channels;
 
-  Object.keys(channels).forEach(key => {
-    if (channels[key] && channels[key].name !== undefined) {
-      if (channels[key].name.startsWith('stream')) {
+  channels.forEach(channel => {
+    if (channel && channel.name !== undefined) {
+      if (channel.name.startsWith('stream')) {
         // const channelName = channels[key].name;
-        bot.client.deleteChannel(channels[key], (err) => {
-          if (err) console.log(err);
+        channel.delete().then(() => {
           // console.log(`Removed ${channelName}`);
         });
       }
@@ -211,7 +203,7 @@ function handleJoinMeCommands(bot, message, cmdArgs) {
       break;
 
     case 'removeall':
-      if (isAdminOrMod(bot.client.servers['0'], message.author)) {
+      if (isAdminOrMod(bot.client.guilds.first(), message.author)) {
         autoRemove(bot);
       } else {
         message.channel.sendMessage('Only Admins or Mods can delete all stream channels');
@@ -219,7 +211,8 @@ function handleJoinMeCommands(bot, message, cmdArgs) {
       break;
 
     default:
-      break;
+      return true;
+      break; // I mean, it just pains me not to see it
   }
 }
 
