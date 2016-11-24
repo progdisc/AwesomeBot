@@ -26,9 +26,9 @@ joinMeStreams: {
 // in memory object containing join.me stream
 const joinMeStreams = {};
 
-function isAdminOrMod(guild, user) {
+function isAdminOrMod(member) {
   const immuneRoles = new Set(Settings.voting.immuneRoles);
-  const userRoles = new Set(user.roles.array().map(r => r.name));
+  const userRoles = new Set(member.roles.array().map(r => r.name));
   const setIntersection = [...userRoles].filter(r => immuneRoles.has(r));
   return setIntersection.length > 0;
 }
@@ -121,19 +121,25 @@ function handleRemove(bot, message) {
   const user = message.mentions.users.first();
 
   const topics = Object.keys(joinMeStreams);
+  const id = user ? user.id : message.author.id;
+
+  if (!isAdminOrMod(message.member) && id != message.author.id) {
+    message.channel.sendMessage(`Only admins or mods can remove others' streams.`);
+    return;
+  }
 
   topics.forEach(topic => {
-    if (joinMeStreams[topic][user]) {
-      const channelToDelete = joinMeStreams[topic][user].channel;
+    if (joinMeStreams[topic][id]) {
+      const channelToDelete = joinMeStreams[topic][id].channel;
 
-      deleteStreamInObject(topic, user);
+      deleteStreamInObject(topic, id);
 
       channelToDelete.delete().catch(err => {
         message.channel.sendMessage('Sorry, could not delete channel');
       });
 
       message.channel.sendMessage(
-        `Removed ${user} from active streamers list and deleted #${channelToDelete.name}`);
+        `Removed ${user||message.author} from active streamers list and deleted #${channelToDelete.name}`);
     } else {
       // user has no stream in this topic
       // return message.channel.sendMessage(`Could not find ${user}`);
@@ -203,7 +209,7 @@ function handleJoinMeCommands(bot, message, cmdArgs) {
       break;
 
     case 'removeall':
-      if (isAdminOrMod(bot.client.guilds.first(), message.author)) {
+      if (isAdminOrMod(message.member)) {
         autoRemove(bot);
       } else {
         message.channel.sendMessage('Only Admins or Mods can delete all stream channels');
