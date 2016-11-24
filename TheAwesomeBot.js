@@ -39,8 +39,15 @@ class TheAwesomeBot {
       const cmd = cmdMatch[1];
       const cmdArgs = cmdMatch[2].trim();
 
-      const showUsage = this.commands[cmd].run(this, message, cmdArgs);
-      if (showUsage) {
+      let showUsage;
+
+      try {
+        showUsage = this.commands[cmd].run(this, message, cmdArgs);
+      } catch (err) {
+        message.channel.sendMessage('There was an error running the command:\n```\n'+err.toString()+'\n```');
+      }
+
+      if (showUsage === true) {
         message.channel.sendMessage('```\n'+
           (typeof this.commands[cmd].usage == 'string' ?
             this.commands[cmd].usage :
