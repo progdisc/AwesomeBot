@@ -5,49 +5,53 @@ const proRegs = {};
 const pros = {};
 const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 
-function initProsObject() {
-  proTerms = proTerms
-    .filter(terms => terms[0].length > 0);
+let pro_re;
 
-  proTerms.forEach(termList => {
-    pros[termList[0]] = [];
-    const list = termList.join('|').toLowerCase().split('').map(c => alphabet.includes(c)||c=='|'?c:'\\'+c).join('');
-    proRegs[termList[0]] = new RegExp(`(^|[^a-z])(${list})($|[^a-z])`, 'i');
-  });
+proTerms = proTerms
+  .filter(terms => terms[0].length > 0);
+
+
+function fix_escapes(str) {
+  return str.replace(fix_escapes.re, '\\$&')
 }
+fix_escapes.re = /[^a-z0-9|]/ig
+
+
+function initProsMatcher() {
+  const pro_re_terms = proTerms.map(function(termList) {
+    const termPros = new Set();
+
+    termPros.original = termList[0]
+    for (let term of termList)
+      pros[term.toLowerCase()] = termPros;
+
+    return fix_escapes(termList.join('|'));
+  });
+  
+  pro_re = new RegExp(`(?:^|\\W)(${pro_re_terms.join('|')})(?:$|\\W)`, 'gi')
+}
+
 
 function getProsOnline(guild) {
-  const prosOnline = guild.members.filterArray(member => member.roles.find('name', 'Pros'))
-    .filter(p => p.presence.status === 'online' || p.presence.status === 'idle')
-    .map(p => p.user.username);
-
-  return new Set(prosOnline);
+  return new Set(guild.members
+    .filter(m => m.roles.find('name', 'Pros') && ['online', 'idle'].includes(m.presence.status))
+    .map(p => p.user.username));
 }
 
-function loadAndMatchPros(bot, cb) {
-  initProsObject();
 
+function loadAndMatchPros(bot) {
   const helpChannel = bot.client.channels.find('name', 'helpdirectory');
 
-  helpChannel.fetchMessages({limit: 100})
+  return helpChannel.fetchMessages({limit: 100})
   .then(messages => {
     messages.forEach((messageObj) => {
-      proTerms.forEach(termList => {
-        if (messageObj.content.toLowerCase().match(proRegs[termList[0]])) {
-          pros[termList[0]].push({
-              username: messageObj.author.username,
-              mention: messageObj.author.toString(), // mention() ?
-          });
-        }
-      });
+      pro_re.lastIndex = 0;
+      let match;
+      while (match = pro_re.exec(messageObj.content)) {
+        pros[match[1].toLowerCase()].add(messageObj.author.username)
+      }
     });
-
-    cb(null, 'Done');
   })
-  .catch(err => {
-      console.error(err);
-      cb(err, null);
-  });
 }
 
 module.exports = {
@@ -61,33 +65,41 @@ module.exports = {
     let lang = cmdArgs.toLowerCase().trim();
     const guild = bot.client.guilds.first();
 
-    proTerms.forEach(termList => {
-      if (termList.map(t => t.toLowerCase()).includes(lang)) lang = termList[0];
-    });
-
-    let replyString = `Here are some pros online that can help with **${lang}**: `;
-
-    const prosOnline = getProsOnline(guild);
-
-    if (pros[lang] && pros[lang].length > 0) {
-      pros[lang].forEach(pro => {
-        if (prosOnline.has(pro.username)) {
-          replyString += `\n${pro.mention}`;
-        }
-      });
-    
-      message.channel.sendMessage(replyString);
-    } else {
-      message.channel.sendMessage(`No pros found for ${cmdArgs} :(`);
+    {
+      pro_re.lastIndex = 0;
+      let match = pro_re.exec(lang);
+      lang = (match && match[1] || lang).toLowerCase();
     }
+
+    let replyString;
+    const online = getProsOnline(guild);
+
+    if (pros[lang] && pros[lang].size > 0) {
+      let langName = pros[lang].original;
+      replyString = `Here are some pros online that can help with **${langName}**: \n`;
+
+      for (let user of pros[lang]) {
+        if (online.has(user))
+          replyString += `\n${user}`
+      }
+    } else {
+      replyString = `No pros found for ${cmdArgs} :(`
+    }
+
+    message.channel.sendMessage(replyString);
   },
 
   init: bot => {
     console.log('Loading pros...');
-    loadAndMatchPros(bot, (err, status) => {
-      if (err) console.log(err);
-      else if (status === 'Done') console.log('Done reading in pros from #helpdirectory!');
-    });
+    initProsMatcher();
+    loadAndMatchPros(bot)
+      .then(function(status) {
+        console.log('Done reading in pros from #helpdirectory!')
+      })
+      .catch(function() {
+        console.error(err);
+        console.error(err.stack);
+      })
   },
 };
 
