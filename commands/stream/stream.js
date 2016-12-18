@@ -1,5 +1,3 @@
-let Settings;
-
 /*
    This module is meant to handle the command '!bot streams #channel'
 
@@ -9,9 +7,9 @@ e.g ['!bot streams python', '!bot streams php'...]
 e.g ['!bot streams remove [channel] [user]']
 
 How it works:
-- joinMeStreams is an object with the following schema:
+- streams is an object with the following schema:
 
-joinMeStreams: {
+streams: {
 [channel] : {
 [user]: link ,
 [user]: link ,
@@ -20,205 +18,160 @@ joinMeStreams: {
 .
 }
 }
-- joinMeStreams is an in-memory-object of sorts to keep track of streams.
+- streams is an in-memory-object of sorts to keep track of streams.
 */
 
 // in memory object containing join.me stream
-const joinMeStreams = {};
-
-function isAdminOrMod(member) {
-  const immuneRoles = new Set(Settings.voting.immuneRoles);
-  const userRoles = new Set(member.roles.array().map(r => r.name));
-  const setIntersection = [...userRoles].filter(r => immuneRoles.has(r));
-  return setIntersection.length > 0;
-}
+const streams = {};
 
 function putStreamInObject(topic, user, link, description) {
-  if (!joinMeStreams[topic]) {
-    joinMeStreams[topic] = {};
+  if (!streams[topic]) {
+    streams[topic] = {};
   }
 
-  joinMeStreams[topic][user] = { link, description, channel: '' };
+  streams[topic][user] = { link, description, channel: '' };
 
   // console.log(`Put in Object: Key: ${topic}, User Key: ${user}`);
 }
 
 function createChannel(title, bot, message, topic, user) {
-  return new Promise((resolve, reject) => {
-    message.guild.createChannel(title, 'text').then(channel => {
-      joinMeStreams[topic][user].channel = channel;
-      resolve(channel);
-    });
+  return message.guild.createChannel(title, 'text').then(channel => {
+    streams[topic][user].channel = channel;
+    return channel
   });
 }
 
 function setTopicToLink(channel, link, bot, topic, user) {
-  return new Promise((resolve, reject) => {
-    channel.setTopic(link).then(() => {
-      joinMeStreams[topic][user].channel = channel;
-      resolve(channel);
-    });
+  return channel.setTopic(link).then(() => {
+    streams[topic][user].channel = channel;
+    return channel;
   });
 }
 
-function handleCreateStreamChannel(bot, message, args) {
-  let [, topic, link, user] = args.split(' '); // eslint-disable-line prefer-const
-
-  if (!topic || !link) {
-    return message.channel.sendMessage('err, please provide topic and link!');
-  }
-
-  if (link.indexOf('http://') === -1 && link.indexOf('https://') === -1) {
-    return message.channel.sendMessage('a valid link must be supplied (starting with http/https)!');
-  }
-
-  user = message.mentions.users.first();
-  if (user) {
-    // Creating a channel for someone else
-    // The keys in the topics object are username mention id
-  } else {
-    // Creating a channel for you
-    // The keys in the topics object are username mention id
-    user = message.author;
-  }
-  const channelFormat = `stream_${user.username}_${topic}`;
-
-  const defaultDescription =
-    `${user} is streaming about ${topic}`;
-
-  putStreamInObject(topic, user.id, link, defaultDescription);
-
-  const existingChannel = bot.client.channels.get('name', channelFormat);
-
-  if (existingChannel) {
-    joinMeStreams[topic][user.id].channel = existingChannel;
-    joinMeStreams[topic][user.id].link = link;
-
-    existingChannel.setTopic(link).catch(err => {
-      existingChannel.sendMessage('There was an error setting the existings channel topic!');
-    });
-
-    return message.channel.sendMessage('Channel already exists.. Updated stream link!');
-  }
-  return createChannel(channelFormat, bot, message, topic, user.id)
-    .then((createdChannel) => setTopicToLink(createdChannel, link, bot, topic, user.id))
-    .then((channelWithTopic) =>
-      message.channel.sendMessage(`Created ${channelWithTopic}!`))
-    .catch((errMessage) => {
-      message.channel.sendMessage(`Sorry, could not create channel (${errMessage})`);
-    });
-}
 
 function deleteStreamInObject(topic, user) {
-  if (Object.keys(joinMeStreams[topic]).length === 1) {
-    delete joinMeStreams[topic];
+  if (Object.keys(streams[topic]).length === 1) {
+    delete streams[topic];
   } else {
-    delete joinMeStreams[topic][user];
+    delete streams[topic][user];
   }
 }
 
-function handleRemove(bot, message) {
-  const user = message.mentions.users.first();
 
-  const topics = Object.keys(joinMeStreams);
-  const id = user ? user.id : message.author.id;
+const commands = {
+  create: function handleCreateStream(bot, message, args) {
+    let [, topic, link, user] = args.split(' '); // eslint-disable-line prefer-const
 
-  if (!isAdminOrMod(message.member) && id != message.author.id) {
-    message.channel.sendMessage(`Only admins or mods can remove others' streams.`);
-    return;
-  }
+    if (!topic || !link) {
+      return message.channel.sendMessage('err, please provide topic and link!');
+    }
 
-  topics.forEach(topic => {
-    if (joinMeStreams[topic][id]) {
-      const channelToDelete = joinMeStreams[topic][id].channel;
+    if (link.indexOf('http://') === -1 && link.indexOf('https://') === -1) {
+      return message.channel.sendMessage('a valid link must be supplied (starting with http/https)!');
+    }
 
-      deleteStreamInObject(topic, id);
+    user = message.mentions.users.first();
+    if (user) {
+      // Creating a channel for someone else
+      // The keys in the topics object are username mention id
+    } else {
+      // Creating a channel for you
+      // The keys in the topics object are username mention id
+      user = message.author;
+    }
+    const channelFormat = `stream_${user.username}_${topic}`;
 
-      channelToDelete.delete().catch(err => {
-        message.channel.sendMessage('Sorry, could not delete channel');
+    const defaultDescription =
+      `${user} is streaming about ${topic}`;
+
+    putStreamInObject(topic, user.id, link, defaultDescription);
+
+    const existingChannel = bot.client.channels.get('name', channelFormat);
+
+    if (existingChannel) {
+      streams[topic][user.id].channel = existingChannel;
+      streams[topic][user.id].link = link;
+
+      existingChannel.setTopic(link).catch(err => {
+        existingChannel.sendMessage('There was an error setting the existings channel topic!');
       });
 
-      message.channel.sendMessage(
-        `Removed ${user||message.author} from active streamers list and deleted #${channelToDelete.name}`);
-    } else {
-      // user has no stream in this topic
-      // return message.channel.sendMessage(`Could not find ${user}`);
+      return message.channel.sendMessage('Channel already exists.. Updated stream link!');
     }
-  });
-}
+    return createChannel(channelFormat, bot, message, topic, user.id)
+      .then((createdChannel) => setTopicToLink(createdChannel, link, bot, topic, user.id))
+      .then((channelWithTopic) =>
+        message.channel.sendMessage(`Created ${channelWithTopic}!`))
+      .catch((errMessage) => {
+        message.channel.sendMessage(`Sorry, could not create channel (${errMessage})`);
+      });
+  },
 
-function listStreams(bot, message) {
-  let buildMessage = 'Available streams: \n';
+  remove: function handleRemoveStream(bot, message) {
+    const user = message.mentions.users.first();
 
-  const topics = Object.keys(joinMeStreams);
+    const topics = Object.keys(streams);
+    const id = user ? user.id : message.author.id;
 
-  if (topics.length === 0) {
-    return message.channel.sendMessage('No streams! :frowning:');
-  }
+    if (!bot.isAdminOrMod(message.member) && id != message.author.id) {
+      message.channel.sendMessage(`Only admins or mods can remove others' streams.`);
+      return;
+    }
 
-  topics.forEach(topic => {
-    const streams = Object.keys(joinMeStreams[topic]);
+    topics.forEach(topic => {
+      if (streams[topic][id]) {
+        const channelToDelete = streams[topic][id].channel;
 
-    buildMessage += `**\n${topic}**\n`;
+        deleteStreamInObject(topic, id);
 
-    streams.forEach((stream, index) => {
-      const link = joinMeStreams[topic][stream].link;
-      const description = joinMeStreams[topic][stream].description;
-
-      buildMessage += `   ${index + 1}. ${link} - ${description}\n`;
-    });
-  });
-
-  return message.channel.sendMessage(buildMessage);
-}
-
-function autoRemove(bot) {
-  const channels = bot.client.guilds.first().channels;
-
-  channels.forEach(channel => {
-    if (channel && channel.name !== undefined) {
-      if (channel.name.startsWith('stream')) {
-        // const channelName = channels[key].name;
-        channel.delete().then(() => {
-          // console.log(`Removed ${channelName}`);
+        channelToDelete.delete().catch(err => {
+          message.channel.sendMessage('Sorry, could not delete channel');
         });
-      }
-    }
-  });
 
-  if (Object.keys(joinMeStreams).length > 0) {
-    Object.keys(joinMeStreams).forEach(topic => delete joinMeStreams[topic]);
-  }
-}
-
-
-function handleJoinMeCommands(bot, message, cmdArgs) {
-  const cmd = cmdArgs.split(' ')[0];
-
-  switch (cmd) {
-    case 'create':
-      handleCreateStreamChannel(bot, message, cmdArgs);
-      break;
-
-    case 'remove':
-      handleRemove(bot, message, cmdArgs);
-      break;
-
-    case 'list':
-      listStreams(bot, message, cmdArgs);
-      break;
-
-    case 'removeall':
-      if (isAdminOrMod(message.member)) {
-        autoRemove(bot);
+        message.channel.sendMessage(
+          `Removed ${user||message.author} from active streamers list and deleted #${channelToDelete.name}`);
       } else {
-        message.channel.sendMessage('Only Admins or Mods can delete all stream channels');
+        // user has no stream in this topic
+        // return message.channel.sendMessage(`Could not find ${user}`);
       }
-      break;
+    });
+  },
 
-    default:
-      return true;
-      break; // I mean, it just pains me not to see it
+  list: function listStreams(bot, message) {
+    let buildMessage = 'Available streams: \n';
+
+    const topics = Object.keys(streams);
+
+    if (topics.length === 0) {
+      return message.channel.sendMessage('No streams! :frowning:');
+    }
+
+    topics.forEach(topic => {
+      buildMessage += `**\n${topic}**\n`;
+      Object.keys(streams[topic]).forEach((stream, index) => {
+        const link = streams[topic][stream].link;
+        const description = streams[topic][stream].description;
+
+        buildMessage += `   ${index + 1}. ${link} - ${description}\n`;
+      });
+    });
+
+    return message.channel.sendMessage(buildMessage);
+  },
+
+  removeall: function removeAllStreams(bot, message) {
+    if (message && !bot.isAdminOrMod(message.member)) {
+      return message.channel.sendMessage('Only Admins or Mods can delete all stream channels');
+    }
+
+    console.log('Removing all stream channels..');
+    bot.client.guilds.first().channels.forEach(channel => {
+      if (channel && channel.name !== undefined && channel.name.startsWith('stream'))
+        channel.delete()
+        // .then(() => console.log(`Removed ${channel.name}`));
+    });
+
+    Object.keys(streams).forEach(topic => delete streams[topic]);
   }
 }
 
@@ -230,12 +183,14 @@ module.exports = {
     'stream removeall - removes every streaming (Mods only)',
   ],
 
-  run: handleJoinMeCommands,
+  run: (bot, message, cmdArgs) => {
+    const cmdFn = commands[cmdArgs.split(' ')[0]];
+    if (!cmdFn) return true;
+    cmdFn(bot, message, cmdArgs);
+  },
 
   init: (bot) => {
-    Settings = bot.settings;
-    console.log('Removing all stream channels..');
-    autoRemove(bot);
+    commands.removeall(bot);
   },
 };
 

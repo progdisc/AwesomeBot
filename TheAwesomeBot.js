@@ -45,6 +45,8 @@ class TheAwesomeBot {
         showUsage = this.commands[cmd].run(this, message, cmdArgs);
       } catch (err) {
         message.channel.sendMessage('There was an error running the command:\n```\n'+err.toString()+'\n```');
+        console.error(err);
+        console.error(err.stack);
       }
 
       if (showUsage === true) {
@@ -123,6 +125,13 @@ class TheAwesomeBot {
 
     console.log('Connecting...');
     this.client.login(this.token);
+  }
+
+  isAdminOrMod(member) {
+    const immuneRoles = new Set(this.settings.voting.immuneRoles);
+    const userRoles = new Set(member.roles.array().map(r => r.name));
+    const setIntersection = [...userRoles].filter(r => immuneRoles.has(r));
+    return setIntersection.length > 0;
   }
 }
 
