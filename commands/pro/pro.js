@@ -58,8 +58,8 @@ function loadAndMatchPros(bot) {
 
 
 function getPros(bot, lang) {
+  if (!pros[lang]) return;
   const langPros = Array.from(pros[lang]);
-  if (!langPros) return;
 
   const guild = bot.client.guilds.first();
   const online = getProsOnline(guild);

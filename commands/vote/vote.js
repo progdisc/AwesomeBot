@@ -23,10 +23,10 @@ const voteTypes = {
  *  votes: [<people who voted]
  * }
  */
-const currentVotes = {};
-Object.keys(voteTypes).forEach(k => {
+const currentVotes = Object.keys(voteTypes).forEach((currentVotes, k) => {
   currentVotes[k] = {};
-});
+  return currentVotes;
+}, {});
 
 function setIntersection(setA, setB) {
   return new Set([...setA].filter(x => setB.has(x)));
