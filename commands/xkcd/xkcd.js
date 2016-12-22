@@ -52,7 +52,6 @@ module.exports = {
       });
     } else {
       // message isn't sent because of time limit
-      return;
     }
   },
   init: (bot) => {
