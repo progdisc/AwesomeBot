@@ -1,6 +1,6 @@
 {
   "bot_cmd": "!bot",
-  "api_token": "MjExNDMyOTUxNzY4OTQwNTQ0.Czkv7g.EVaOok96HO7BNC15Ezth511FyN0",
+  "api_token": "",
   "voting": {
     "immuneRoles": ["Admins", "Mods"],
     "voteThreshold": 5,
