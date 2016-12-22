@@ -8,7 +8,7 @@
   },
   "xkcd": {
     "timeLimit": 60,
-    "limitMessages": false
+    "limitMessages": true
   },
   "commands": [
     "help",
