@@ -1,9 +1,9 @@
-const google = require("google");
-const request = require("request");
-const cheerio = require("cheerio");
+const google = require(`google`);
+const request = require(`request`);
+const cheerio = require(`cheerio`);
 let timeLimit = 60;
 let config;
-let lastMessageTime = 0;
+let lastMessageTime;
 
 module.exports = {
   usage: 'xkcd <keywords> - finds a xkcd comic with relevant keywords',
@@ -12,24 +12,32 @@ module.exports = {
 
     if ((Math.floor(Date.now() / 1000) - lastMessageTime) >= timeLimit) {
       google(`${cmdArgs} xkcd`, (err, res) => {
-        for(let i = 0; i < res.links.length; i++){
-          if(res.links[i].link.includes("//xkcd.com")){
+        for (let i = 0; i < res.links.length; i++) {
+          if (res.links[i].link.includes(`//xkcd.com`)) {
             xkcdLink = res.links[i].link;
             break;
           }
         }
         // we are done with finding a link
-        if (!xkcdLink){
+        if (!xkcdLink) {
           // link is either empty (this should NOT happen) or we don't have a link
           message.channel.sendMessage(`I'm sorry ${message.author}, i couldn't find a xkcd.`);
         } else {
           request(xkcdLink, (error, response, body) => {
             if (!error && response.statusCode === 200) {
+              // we have successfully got a response
               let htmlBody = cheerio.load(body);
 
               if (htmlBody('#comic').children().get(0).tagName === 'img') {
+                // some xkcd comics have comic in a <a> tag because of hd image
+                // TODO (samox) : Add support for large comics
                 let xkcdImg = `https:${htmlBody('#comic').children().first().attr('src')}`;
                 message.channel.sendMessage(xkcdImg);
+
+                if (config.limitMessages) {
+                  // we don't want users spamming it
+                  lastMessageTime = Math.floor(Date.now() / 1000);
+                }
               } else {
                 message.channel.sendMessage(`I'm sorry ${message.author}, i couldn't find a xkcd.`);
               }
@@ -37,10 +45,14 @@ module.exports = {
           });
         }
       });
+    } else {
+      // message isn't sent because of time limit
+      return;
     }
   },
   init: (bot) => {
     config = bot.settings.xkcd;
     timeLimit = config.timeLimit || timeLimit;
+    lastMessageTime = Math.floor(Date.now() / 1000) - timeLimit;
   },
 };
