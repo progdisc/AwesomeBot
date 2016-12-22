@@ -36,8 +36,8 @@ module.exports = {
               if (htmlBody('#comic').children().get(0).tagName === 'img') {
                 // some xkcd comics have comic in a <a> tag because of hd image
                 // TODO (samox) : Add support for large comics
-                let xkcdImg = `https:${htmlBody('#comic').children().first().attr('src')}`;
-                message.channel.sendMessage(xkcdImg);
+                let xkcdImg = htmlBody('#comic').children().first();
+                message.channel.sendMessage(`\`\`\`diff\nTitle: ${htmlBody('#ctitle').text()}\nAlt Text: ${xkcdImg.attr('title')}\n\`\`\`\nhttps:${xkcdImg.attr('src')}`);
 
                 if (config.limitMessages) {
                   // we don't want users spamming it
