@@ -11,6 +11,11 @@ module.exports = {
     let xkcdLink = false;
 
     if ((Math.floor(Date.now() / 1000) - lastMessageTime) >= timeLimit) {
+
+      if (!cmdArgs) {
+        return true;
+      }
+
       google(`${cmdArgs} xkcd`, (err, res) => {
         for (let i = 0; i < res.links.length; i++) {
           if (res.links[i].link.includes(`//xkcd.com`)) {
