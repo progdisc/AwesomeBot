@@ -10,10 +10,10 @@ module.exports = {
     let xkcdLink = false;
 
     if ((Math.floor(Date.now() / 1000) - lastMessageTime) >= timeLimit) {
-
       if (!cmdArgs) {
         return true;
       }
+
       const options = {
         url: `https://duckduckgo.com/html/?q=${cmdArgs}%20xkcd`,
         headers: {
@@ -24,13 +24,11 @@ module.exports = {
       }
       request(options, (err, res, bod) => {
         let xkcdBody = cheerio.load(bod);
-        console.log(typeof(xkcdBody(".result__a").first().attr("href")));
-        console.log(xkcdBody(".result__a").first().attr("href"));
         try {
-          if (xkcdBody(".result__a").first().attr("href").includes(`https://xkcd.com/`) || xkcdBody(".result__a").first().attr("href").includes(`https://www.xkcd.com/`)){
+          if (xkcdBody(".result__a").first().attr("href").includes(`https://xkcd.com/`) || xkcdBody(".result__a").first().attr("href").includes(`https://www.xkcd.com/`)) {
             xkcdLink = xkcdBody(".result__a").first().attr("href");
           }
-        } catch(e) {
+        } catch (e) {
           message.channel.sendMessage("There was a problem with DuckDuckGo query.");
         }
         // we are done with finding a link
