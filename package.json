@@ -21,8 +21,6 @@
   "dependencies": {
     "cheerio": "^0.22.0",
     "discord.js": "^10.0.1",
-    "google": "^2.1.0",
-    "htmlparser": "^1.7.7",
     "request": "^2.79.0"
   },
   "devDependencies": {
