@@ -1,4 +1,3 @@
-const google = require(`google`);
 const request = require(`request`);
 const cheerio = require(`cheerio`);
 let timeLimit = 60;
@@ -15,13 +14,24 @@ module.exports = {
       if (!cmdArgs) {
         return true;
       }
-
-      google(`${cmdArgs} xkcd`, (err, res) => {
-        for (let i = 0; i < res.links.length; i++) {
-          if (res.links[i].link.includes(`//xkcd.com`)) {
-            xkcdLink = res.links[i].link;
-            break;
+      const options = {
+        url: `https://duckduckgo.com/html/?q=${cmdArgs}%20xkcd`,
+        headers: {
+          'accept-language': 'en-US,en;q=0.8',
+          'upgrade-insecure-requests': 1,
+          'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
+        }
+      }
+      request(options, (err, res, bod) => {
+        let xkcdBody = cheerio.load(bod);
+        console.log(typeof(xkcdBody(".result__a").first().attr("href")));
+        console.log(xkcdBody(".result__a").first().attr("href"));
+        try {
+          if (xkcdBody(".result__a").first().attr("href").includes(`https://xkcd.com/`) || xkcdBody(".result__a").first().attr("href").includes(`https://www.xkcd.com/`)){
+            xkcdLink = xkcdBody(".result__a").first().attr("href");
           }
+        } catch(e) {
+          message.channel.sendMessage("There was a problem with DuckDuckGo query.");
         }
         // we are done with finding a link
         if (!xkcdLink) {
