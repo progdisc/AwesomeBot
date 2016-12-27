@@ -1,7 +1,7 @@
 Use codeblocks for formatting code:
-```<language name>
+\```<language name>
 <your code here>
-```
+\```
 
 For example:
 ```python
