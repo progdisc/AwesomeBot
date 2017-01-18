@@ -1,10 +1,10 @@
-Format your code with codeblocks!
-\`\`\`
-code
-here
-\`\`\`
-becomes
-```
-code
-here
+Use codeblocks for formatting code:
+\```<language name>
+<your code here>
+\```
+
+For example:
+```python
+if True:
+    print("Hi!")
 ```
