@@ -4,3 +4,6 @@ https://facebook.github.io/react/docs/getting-started.html
 
 https://www.youtube.com/watch?v=MhkGQAoc7bc&list=PLoYCgNOIyGABj2GQSlDRjgvXtqfDxKm5b
 
+https://www.codecademy.com/learn/react-101
+
+https://www.codecademy.com/learn/react-102

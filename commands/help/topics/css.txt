@@ -1,0 +1,7 @@
+See these links for learning CSS:
+
+https://www.codecademy.com/learn/web
+
+http://www.w3schools.com/w3css/
+
+http://learnlayout.com/
