@@ -2,6 +2,6 @@ See these links for learning CSS:
 
 https://www.codecademy.com/learn/web
 
-http://www.w3schools.com/w3css/
+http://www.w3schools.com/css/default.asp
 
 http://learnlayout.com/
