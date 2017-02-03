@@ -20,52 +20,55 @@ module.exports = {
     if (!cmdArgs) return true;
 
     // get geocode info
-    let request_url = geocodeEndpoint
+    let requestURL = geocodeEndpoint
                             .replace('gkey', weatherConfig.geocode_api_key)
                             .replace('input', cmdArgs);
     // do percentage encoding
-    request_url = encodeURI(request_url);
+    requestURL = encodeURI(requestURL);
 
-    request(request_url, (err, res, bod) => {
+    request(requestURL, (err, res, bod) => {
       if (err) {
         message.reply('There was a problem with geocoding request.');
         return;
       }
 
-      let geocode_data = JSON.parse(bod);
+      let geocodeData = JSON.parse(bod);
 
-      if (geocode_data.status !== 'OK') {
+      if (geocodeData.status !== 'OK') {
         message.reply(`I'm sorry ${message.author}, your address couldn't be detected.`);
         return;
       }
 
-      let address = geocode_data.results[0].formatted_address;
-      let coordinate = geocode_data.results[0].geometry.location;
+      let address = geocodeData.results[0].formatted_address;
+      let coordinate = geocodeData.results[0].geometry.location;
       //get weather data
-      request_url = darkskyEndpoint
+      requestURL = darkskyEndpoint
                           .replace('key', weatherConfig.darksky_api_key)
                           .replace('lat', coordinate.lat)
                           .replace('lng', coordinate.lng);
 
-      request(request_url, (error, response, body) => {
-        let weather_data = JSON.parse(body);
+      request(requestURL, (error, response, body) => {
+        let weatherData = JSON.parse(body);
 
-        let offset = weather_data.offset;
-        let utc_time = weather_data.currently.time;
-        let local_time = new Date(utc_time * 1000);
-        local_time.setHours(local_time.getHours() + offset);
-        let date_string = local_time.toGMTString().slice(0, -4);
-        let temperature_f = weather_data.currently.temperature.toFixed(0);
-        let temperature_c = fahrenheitToCelcius(temperature_f);
-        let summary = weather_data.currently.summary;
+        let offset = weatherData.offset;
+        let utcTime = weatherData.currently.time;
+        // datetime is weird in javascript, please do change this part if you can
+        let localTime = new Date(utcTime * 1000);
+        localTime.setHours(localTime.getHours() + offset);
+        // toGMTString prints out timezone of host so we slice it off
+        let dateString = localTime.toGMTString().slice(0, -4);
+        let temperatureF = weatherData.currently.temperature.toFixed(0);
+        let temperatureC = fahrenheitToCelcius(temperatureF);
+        let summary = weatherData.currently.summary;
 
         let embed = new discord.RichEmbed();
         embed.setColor('#4286f4')
-             .setFooter(`Local Time: ${date_string}`)
+             .setFooter(`Local Time: ${dateString}`)
              .setTitle(`Weather in ${address}`)
              .addField('Summary', summary)
-             .addField('Temperature °C', `${temperature_c} °C`, true)
-             .addField('Temperature °F', `${temperature_f} °F`, true);
+             .addField('Temperature °C', `${temperatureC} °C`, true)
+             .addField('Temperature °F', `${temperatureF} °F`, true)
+             .setDescription(weatherConfig.icons[weatherData.currently.icon]);
 
         message.channel.sendEmbed(embed);
       });
