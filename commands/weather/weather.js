@@ -28,14 +28,14 @@ module.exports = {
 
     request(requestURL, (err, res, bod) => {
       if (err) {
-        message.reply('There was a problem with geocoding request.');
+        message.chanel.sendMessage('There was a problem with geocoding request.');
         return;
       }
 
       let geocodeData = JSON.parse(bod);
 
       if (geocodeData.status !== 'OK') {
-        message.reply(`I'm sorry ${message.author}, your address couldn't be detected.`);
+        message.channel.sendMessage(`I'm sorry ${message.author}, your address couldn't be detected.`);
         return;
       }
 
@@ -60,7 +60,10 @@ module.exports = {
         let temperatureF = weatherData.currently.temperature.toFixed(0);
         let temperatureC = fahrenheitToCelcius(temperatureF);
         let summary = weatherData.currently.summary;
-
+        let humidity = weatherData.currently.humidity * 100;
+        // convert speed to freedom units
+        let windSpeed = (weatherData.currently.windSpeed * 1.61).toFixed(0);
+        let pressure = weatherData.currently.pressure.toFixed(0);
         let embed = new discord.RichEmbed();
         embed.setColor('#4286f4')
              .setFooter(`Local Time: ${dateString}`)
@@ -68,6 +71,10 @@ module.exports = {
              .addField('Summary', summary)
              .addField('Temperature °C', `${temperatureC} °C`, true)
              .addField('Temperature °F', `${temperatureF} °F`, true)
+             .addField('Timezone', weatherData.timezone, true)
+             .addField('Humidity', `${humidity}%`, true)
+             .addField('Wind Speed', `${windSpeed} km/h`, true)
+             .addField('Air Pressure', `${pressure} mbar`, true)
              .setDescription(weatherConfig.icons[weatherData.currently.icon]);
 
         message.channel.sendEmbed(embed);
