@@ -8,7 +8,23 @@
   },
   "xkcd": {
     "timeLimit": 60,
-    "limitMessages": true
+    "limitMessages": false
+  },
+  "weather": {
+    "geocode_api_key": "your_key",
+    "darksky_api_key": "your_key",
+    "icons": {
+      "clear-day": ":sunny:",
+      "clear-night": ":crescent_moon:",
+      "rain": ":cloud_rain:",
+      "snow": ":cloud_snow:",
+      "sleet": ":cloud_snow:",
+      "partly-cloudy-day": ":partly_sunny:",
+      "partly-cloudy-night": ":partly_sunny:",
+      "fog": ":fog:",
+      "cloudy":":cloud:",
+      "wind": "wind_blowing_face"
+    }
   },
   "commands": [
     "help",
@@ -17,7 +33,8 @@
     "stream",
     "uptime",
     "vote",
-    "xkcd"
+    "xkcd",
+    "weather"
   ],
   "openshift": {
     "heartbeat_channel": "keepalive",
