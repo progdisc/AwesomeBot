@@ -20,7 +20,7 @@
   "homepage": "https://github.com/rgoliveira/AwesomeBot",
   "dependencies": {
     "cheerio": "^0.22.0",
-    "discord.js": "^10.0.1",
+    "discord.js": "^11.0.0",
     "request": "^2.79.0"
   },
   "devDependencies": {
