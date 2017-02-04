@@ -83,7 +83,7 @@ module.exports = {
       return void loadAndMatchPros(bot).then(function() {
         return message.channel.sendMessage('Pros list refreshed.');
       })
-      .catch(function() {
+      .catch((err) => {
         console.error(err);
         console.error(err.stack);
       })
@@ -104,7 +104,7 @@ module.exports = {
       .then(function() {
         console.log('Done reading in pros from #helpdirectory!')
       })
-      .catch(function() {
+      .catch((err) => {
         console.error(err);
         console.error(err.stack);
       })

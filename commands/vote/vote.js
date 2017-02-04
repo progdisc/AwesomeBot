@@ -16,17 +16,21 @@ const voteTypes = {
 };
 
 /*
- * currentVotes: dictionary of votings.
- * Each voting should look like:
+ * currentVotes: dictionary of votes
  * {
- *  username: <username>,
- *  votes: [<people who voted]
+ *   <type>: {
+ *     <username>: {
+ *       username: <username>,
+ *       votes: [<people who voted],
+ *       timeout: <timeoutObj>,
+ *     }
+ *   }
  * }
  */
-const currentVotes = Object.keys(voteTypes).forEach((currentVotes, k) => {
+const currentVotes = {};
+Object.keys(voteTypes).forEach((k) => {
   currentVotes[k] = {};
-  return currentVotes;
-}, {});
+});
 
 function setIntersection(setA, setB) {
   return new Set([...setA].filter(x => setB.has(x)));
