@@ -7,7 +7,7 @@ const getFileList = (dirName) => {
 };
 
 const loadHelpText = (filename) => {
-  const content = fs.readFileSync(filename);
+  const content = fs.readFileSync(filename, 'utf8');
   return content || '';
 };
 
