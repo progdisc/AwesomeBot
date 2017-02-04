@@ -1,0 +1,11 @@
+env:
+  node: true
+rules:
+  no-console: off
+  max-len: [error, 120]
+  prefer-template: off
+  no-constant-condition: [error, {checkLoops: false}]
+  no-unused-vars: [error, {argsIgnorePattern: '^(err$|_)'}]
+  no-param-reassign: [error, {props: false}]
+extends: airbnb
+installedESLint: true
