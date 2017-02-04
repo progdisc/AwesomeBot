@@ -44,17 +44,18 @@ class TheAwesomeBot {
       try {
         showUsage = this.commands[cmd].run(this, message, cmdArgs);
       } catch (err) {
-        message.channel.sendMessage('There was an error running the command:\n```\n'+err.toString()+'\n```');
+        message.channel.sendMessage('There was an error running the command:\n' +
+          '```\n' + err.toString() + '\n```');
         console.error(err);
         console.error(err.stack);
       }
 
       if (showUsage === true) {
-        message.channel.sendMessage('```\n'+
-          (typeof this.commands[cmd].usage == 'string' ?
-            this.commands[cmd].usage :
-            this.commands[cmd].usage.join('\n'))+
-        '\n```');
+        let usage = this.commands[cmd].usage;
+        if (typeof usage !== 'string') {
+          usage = usage.join('\n');
+        }
+        message.channel.sendMessage('```\n' + usage + '\n```');
       }
     });
   }

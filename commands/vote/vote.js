@@ -1,10 +1,10 @@
-function handleKick(bot, member, guild) {
+function handleKick(bot, member, _guild) {
   member.kick().catch((err) => {
     if (err) console.log(err);
   });
 }
 
-function handleMute(bot, member, guild) {
+function handleMute(bot, member, _guild) {
   member.setMute(true).catch((err) => {
     if (err) console.log(err);
   });
@@ -76,7 +76,6 @@ module.exports = {
   usage: `vote <${Object.keys(voteTypes).join('|')}> <@user> - start a vote against <@user>`,
 
   run: (bot, message, cmdArgs) => {
-
     // command validation
     const voteRe = new RegExp(`^(${Object.keys(voteTypes).join('|')})`, 'i');
     const reMatch = cmdArgs.match(voteRe);
@@ -88,7 +87,7 @@ module.exports = {
     const user = message.mentions.users.first();
     if (!user) {
       message.channel.sendMessage('You need to specify a valid member!');
-      return;
+      return false;
     }
     const member = guild.members.get(user.id);
 
@@ -96,20 +95,21 @@ module.exports = {
     // warning: assume bot is in one guild only
     if (user === message.author) {
       message.channel.sendMessage('You can\'t start a vote against yourself, silly.');
-      return;
+      return false;
     } else if (user === bot.client.user) {
-      message.channel.sendMessage(`I'm sorry ${message.author}, I'm afraid I can't let you do that.,`)
-      return;
+      message.channel.sendMessage(`I'm sorry ${message.author}, I'm afraid I can't let you do that.,`);
+      return false;
     }
 
     // roles validation
     const userRoles = new Set(member.roles.array().map(r => r.name));
     if (setIntersection(userRoles, new Set(bot.settings.voting.immuneRoles)).size > 0) {
-      message.channel.sendMessage(`try.is('nice') === true`);
-      return;
+      message.channel.sendMessage('try.is(\'nice\') === true');
+      return false;
     }
 
     processVote(voteType, bot, message, guild, member);
+    return false;
   },
 };
 

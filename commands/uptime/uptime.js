@@ -8,15 +8,17 @@ const MAGNITUDES = [
   [HOUR, 'minutes'],
   [MINUTE, 'minutes'],
   [SECOND, 'seconds'],
-  [1, 'milliseconds']
-]
+  [1, 'milliseconds'],
+];
 
 const getUptime = () => {
   let diff = Math.abs((new Date) - startTime);
-  return MAGNITUDES.reduce(function(out, m) {
+  return MAGNITUDES.reduce((out, m) => {
     const current = diff / m[0] | 0;
     diff %= m[0];
-    (out.length || current) && out.push(`${current} ${m[1]}`);
+    if (out.length || current) {
+      out.push(`${current} ${m[1]}`);
+    }
     return out;
   }, []).join(', ');
 };

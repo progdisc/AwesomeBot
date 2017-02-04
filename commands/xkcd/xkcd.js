@@ -1,5 +1,6 @@
-const request = require(`request`);
-const cheerio = require(`cheerio`);
+const request = require('request');
+const cheerio = require('cheerio');
+
 let timeLimit = 60;
 let config;
 let lastMessageTime;
@@ -19,17 +20,19 @@ module.exports = {
         headers: {
           'accept-language': 'en-US,en;q=0.8',
           'upgrade-insecure-requests': 1,
-          'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
-        }
-      }
+          'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+			'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
+        },
+      };
       request(options, (err, res, bod) => {
-        let xkcdBody = cheerio.load(bod);
+        const xkcdBody = cheerio.load(bod);
         try {
-          if (xkcdBody(".result__a").first().attr("href").includes(`https://xkcd.com/`) || xkcdBody(".result__a").first().attr("href").includes(`https://www.xkcd.com/`)) {
-            xkcdLink = xkcdBody(".result__a").first().attr("href");
+          const href = xkcdBody('.result__a').first().attr('href');
+          if (href.includes('https://xkcd.com/') || href.includes('https://www.xkcd.com/')) {
+            xkcdLink = href;
           }
         } catch (e) {
-          message.channel.sendMessage("There was a problem with DuckDuckGo query.");
+          message.channel.sendMessage('There was a problem with DuckDuckGo query.');
         }
         // we are done with finding a link
         if (!xkcdLink) {
@@ -39,13 +42,17 @@ module.exports = {
           request(xkcdLink, (error, response, body) => {
             if (!error && response.statusCode === 200) {
               // we have successfully got a response
-              let htmlBody = cheerio.load(body);
+              const htmlBody = cheerio.load(body);
 
               if (htmlBody('#comic').children().get(0).tagName === 'img') {
                 // some xkcd comics have comic in a <a> tag because of hd image
                 // TODO (samox) : Add support for large comics
-                let xkcdImg = htmlBody('#comic').children().first();
-                message.channel.sendMessage(`\`\`\`diff\nTitle: ${htmlBody('#ctitle').text()}\nAlt Text: ${xkcdImg.attr('title')}\n\`\`\`\nhttps:${xkcdImg.attr('src')}`);
+                const xkcdImg = htmlBody('#comic').children().first();
+                message.channel.sendMessage('```diff\n' +
+                  `Title: ${htmlBody('#ctitle').text()}\n` +
+                  `Alt Text: ${xkcdImg.attr('title')}\n` +
+                  '```\n' +
+                  `https:${xkcdImg.attr('src')}`);
 
                 if (config.limitMessages) {
                   // we don't want users spamming it
@@ -61,6 +68,7 @@ module.exports = {
     } else {
       // message isn't sent because of time limit
     }
+    return false;
   },
   init: (bot) => {
     config = bot.settings.xkcd;
