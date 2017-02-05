@@ -27,8 +27,8 @@ module.exports = {
       request(options, (err, res, bod) => {
         const xkcdBody = cheerio.load(bod);
         try {
-          const hrefs = xkcdBody('.result__a').each((i, link) => {
-            let href = link.attribs.href;
+          xkcdBody('.result__a').each((i, link) => {
+            const href = link.attribs.href;
             if ((href.includes('https://xkcd.com/') || href.includes('https://www.xkcd.com/')) && xkcdLink === false) {
               xkcdLink = href;
             }
