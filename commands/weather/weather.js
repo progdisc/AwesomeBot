@@ -32,39 +32,39 @@ module.exports = {
         return;
       }
 
-      let geocodeData = JSON.parse(bod);
+      const geocodeData = JSON.parse(bod);
 
       if (geocodeData.status !== 'OK') {
         message.channel.sendMessage(`I'm sorry ${message.author}, your address couldn't be detected.`);
         return;
       }
 
-      let address = geocodeData.results[0].formatted_address;
-      let coordinate = geocodeData.results[0].geometry.location;
-      //get weather data
+      const address = geocodeData.results[0].formatted_address;
+      const coordinate = geocodeData.results[0].geometry.location;
+      // get weather data
       requestURL = darkskyEndpoint
                           .replace('key', weatherConfig.darksky_api_key)
                           .replace('lat', coordinate.lat)
                           .replace('lng', coordinate.lng);
 
       request(requestURL, (error, response, body) => {
-        let weatherData = JSON.parse(body);
+        const weatherData = JSON.parse(body);
 
-        let offset = weatherData.offset;
-        let utcTime = weatherData.currently.time;
+        const offset = weatherData.offset;
+        const utcTime = weatherData.currently.time;
         // datetime is weird in javascript, please do change this part if you can
-        let localTime = new Date(utcTime * 1000);
+        const localTime = new Date(utcTime * 1000);
         localTime.setHours(localTime.getHours() + offset);
         // toGMTString prints out timezone of host so we slice it off
-        let dateString = localTime.toGMTString().slice(0, -4);
-        let temperatureF = weatherData.currently.temperature.toFixed(0);
-        let temperatureC = fahrenheitToCelcius(temperatureF);
-        let summary = weatherData.currently.summary;
-        let humidity = weatherData.currently.humidity * 100;
+        const dateString = localTime.toGMTString().slice(0, -4);
+        const temperatureF = weatherData.currently.temperature.toFixed(0);
+        const temperatureC = fahrenheitToCelcius(temperatureF);
+        const summary = weatherData.currently.summary;
+        const humidity = weatherData.currently.humidity * 100;
         // convert speed to freedom units
-        let windSpeed = (weatherData.currently.windSpeed * 1.61).toFixed(0);
-        let pressure = weatherData.currently.pressure.toFixed(0);
-        let embed = new discord.RichEmbed();
+        const windSpeed = (weatherData.currently.windSpeed * 1.61).toFixed(0);
+        const pressure = weatherData.currently.pressure.toFixed(0);
+        const embed = new discord.RichEmbed();
         embed.setColor('#4286f4')
              .setFooter(`Local Time: ${dateString}`)
              .setTitle(`Weather in ${address}`)
@@ -80,5 +80,6 @@ module.exports = {
         message.channel.sendEmbed(embed);
       });
     });
+    return false;
   },
 };

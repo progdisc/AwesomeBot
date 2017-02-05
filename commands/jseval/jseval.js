@@ -3,9 +3,6 @@ const vm = require('vm');
 const stringify = o =>
   JSON.stringify(o, null, 2);
 
-const fixargs = args =>
-  Array.prototype.slice.call(args);
-
 const unchangable = (obj, prop, value) =>
   Object.defineProperty(obj, prop, {
     enumerable: false, configurable: false, writable: false, value,
@@ -14,8 +11,8 @@ const unchangable = (obj, prop, value) =>
 function saferEval(code) {
   // log buffer to emulate console.log
   const buffer = [];
-  function log() {
-    buffer.push(fixargs(arguments).map(stringify).join(' '));
+  function log(...args) {
+    buffer.push(args.map(stringify).join(' '));
   }
 
   // global context exposed to the sandboxed code.

@@ -37,7 +37,7 @@ function putStreamInObject(topic, user, link, description) {
 function createChannel(title, bot, message, topic, user) {
   return message.guild.createChannel(title, 'text').then(channel => {
     streams[topic][user].channel = channel;
-    return channel
+    return channel;
   });
 }
 
@@ -102,8 +102,8 @@ const commands = {
       .then((createdChannel) => setTopicToLink(createdChannel, link, bot, topic, user.id))
       .then((channelWithTopic) =>
         message.channel.sendMessage(`Created ${channelWithTopic}!`))
-      .catch((errMessage) => {
-        message.channel.sendMessage(`Sorry, could not create channel (${errMessage})`);
+      .catch((err) => {
+        message.channel.sendMessage(`Sorry, could not create channel (${err})`);
       });
   },
 
@@ -113,8 +113,8 @@ const commands = {
     const topics = Object.keys(streams);
     const id = user ? user.id : message.author.id;
 
-    if (!bot.isAdminOrMod(message.member) && id != message.author.id) {
-      message.channel.sendMessage(`Only admins or mods can remove others' streams.`);
+    if (!bot.isAdminOrMod(message.member) && id !== message.author.id) {
+      message.channel.sendMessage('Only admins or mods can remove others\' streams.');
       return;
     }
 
@@ -129,7 +129,7 @@ const commands = {
         });
 
         message.channel.sendMessage(
-          `Removed ${user||message.author} from active streamers list and deleted #${channelToDelete.name}`);
+          `Removed ${user || message.author} from active streamers list and deleted #${channelToDelete.name}`);
       } else {
         // user has no stream in this topic
         // return message.channel.sendMessage(`Could not find ${user}`);
@@ -161,19 +161,20 @@ const commands = {
 
   removeall: function removeAllStreams(bot, message) {
     if (message && !bot.isAdminOrMod(message.member)) {
-      return message.channel.sendMessage('Only Admins or Mods can delete all stream channels');
+      message.channel.sendMessage('Only Admins or Mods can delete all stream channels');
+      return;
     }
 
     console.log('Removing all stream channels..');
     bot.client.guilds.first().channels.forEach(channel => {
-      if (channel && channel.name !== undefined && channel.name.startsWith('stream'))
-        channel.delete()
-        // .then(() => console.log(`Removed ${channel.name}`));
+      if (channel && channel.name !== undefined && channel.name.startsWith('stream')) {
+        channel.delete();
+      }
     });
 
     Object.keys(streams).forEach(topic => delete streams[topic]);
-  }
-}
+  },
+};
 
 module.exports = {
   usage: [
@@ -187,6 +188,7 @@ module.exports = {
     const cmdFn = commands[cmdArgs.split(' ')[0]];
     if (!cmdFn) return true;
     cmdFn(bot, message, cmdArgs);
+    return false;
   },
 
   init: (bot) => {

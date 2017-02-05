@@ -1,13 +1,6 @@
-RegExp.prototype.reset = function() {
-  this.lastIndex = 0;
-  return this;
-};
-
-
-function fix_escapes(str) {
-  return str.replace(fix_escapes.re, '\\$&');
+function fixEscapes(str) {
+  return str.replace(/[^a-z0-9|]/ig, '\\$&');
 }
-fix_escapes.re = /[^a-z0-9|]/ig;
 
 
 let proLangRe;
@@ -15,21 +8,23 @@ let pros;
 const TERMS_INCLUDE = './proTerms.js';
 
 function updateProsMatcher() {
+  /* eslint global-require: off */
   delete require.cache[require.resolve(TERMS_INCLUDE)];
   pros = {};
 
   const terms = require(TERMS_INCLUDE)
-    .filter(terms => terms[0].length > 0)
-    .map(function(termList) {
+    .filter(termList => termList[0].length > 0)
+    .map((termList) => {
       const termPros = new Set();
       termPros.original = termList[0];
 
-      for (let term of termList)
+      for (const term of termList) {
         pros[term.toLowerCase()] = termPros;
+      }
 
-      return fix_escapes(termList.join('|'));
+      return fixEscapes(termList.join('|'));
     });
-  
+
   proLangRe = new RegExp(`(?:^|\\W)(${terms.join('|')})(?:$|\\W)`, 'gi');
 }
 
@@ -45,25 +40,30 @@ function loadAndMatchPros(bot) {
   updateProsMatcher();
   const helpChannel = bot.client.channels.find('name', 'helpdirectory');
 
-  return helpChannel.fetchMessages({limit: 100})
-  .then(function(messages) {
-    messages.forEach(function(messageObj) {
-      let match;
-      proLangRe.reset();
-      while (match = proLangRe.exec(messageObj.content))
+  return helpChannel.fetchMessages({ limit: 100 })
+  .then((messages) => {
+    messages.forEach((messageObj) => {
+      proLangRe.lastIndex = 0;
+      while (true) {
+        const match = proLangRe.exec(messageObj.content);
+        if (!match) {
+          break;
+        }
         pros[match[1].toLowerCase()].add(messageObj.author.username);
+      }
     });
   });
 }
 
 
 function getPros(bot, lang) {
-  if (!pros[lang]) return;
+  if (!pros[lang]) {
+    return null;
+  }
   const langPros = Array.from(pros[lang]);
-
   const guild = bot.client.guilds.first();
   const online = getProsOnline(guild);
-  return langPros.filter(user => online.has(user)).join('\n')
+  return langPros.filter(user => online.has(user)).join('\n');
 }
 
 module.exports = {
@@ -74,40 +74,44 @@ module.exports = {
   ],
 
   run: (bot, message, cmdArgs) => {
-    if (!cmdArgs)
+    if (!cmdArgs) {
       return true;
+    }
 
     let lang = cmdArgs.toLowerCase().trim();
 
     if (lang === 'reset' && bot.isAdminOrMod(message.member)) {
-      return void loadAndMatchPros(bot).then(function() {
-        return message.channel.sendMessage('Pros list refreshed.');
+      return void loadAndMatchPros(bot).then(() => {
+        message.channel.sendMessage('Pros list refreshed.');
+        return false;
       })
-      .catch(function() {
+      .catch((err) => {
         console.error(err);
         console.error(err.stack);
-      })
+      });
     }
 
-    const match = proLangRe.reset().exec(lang);
+    proLangRe.lastIndex = 0;
+    const match = proLangRe.exec(lang);
     lang = (match && match[1] || lang).toLowerCase();
 
     const foundPros = getPros(bot, lang);
     message.channel.sendMessage(foundPros ?
       `Here are some pros online that can help with **${pros[lang].original}**: \n${foundPros}` :
       `No pros found for ${cmdArgs} :(`);
+    return false;
   },
 
   init: bot => {
     console.log('Loading pros...');
     loadAndMatchPros(bot)
-      .then(function() {
-        console.log('Done reading in pros from #helpdirectory!')
+      .then(() => {
+        console.log('Done reading in pros from #helpdirectory!');
       })
-      .catch(function() {
+      .catch((err) => {
         console.error(err);
         console.error(err.stack);
-      })
+      });
   },
 };
 
