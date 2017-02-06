@@ -28,7 +28,7 @@ module.exports = {
 
     request(requestURL, (err, res, bod) => {
       if (err) {
-        message.channel.sendMessage('There was a problem with geocoding request.');
+        message.chanel.sendMessage('There was a problem with geocoding request.');
         return;
       }
 
