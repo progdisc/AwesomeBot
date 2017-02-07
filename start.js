@@ -1,9 +1,13 @@
-const Settings = require('./settings.json');
 const Bot = require('./TheAwesomeBot.js');
+const Tokens = require('./tokens.json');
 
 function start() {
   // check for the discord token
-  const token = Settings.api_token || process.env.DISCORD_TOKEN;
+  let jsonToken = false;
+  if (Tokens) {
+    jsonToken = Tokens.discord;
+  }
+  const token = jsonToken || process.env.DISCORD_TOKEN;
   if (!token) {
     throw Error('Discord token not set');
   }

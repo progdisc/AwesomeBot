@@ -1,6 +1,5 @@
 {
   "bot_cmd": "!bot",
-  "api_token": "",
   "voting": {
     "immuneRoles": ["Admins", "Mods"],
     "voteThreshold": 5,
@@ -11,8 +10,6 @@
     "limitMessages": false
   },
   "weather": {
-    "geocode_api_key": "your_key",
-    "darksky_api_key": "your_key",
     "icons": {
       "clear-day": ":sunny:",
       "clear-night": ":crescent_moon:",
