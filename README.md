@@ -22,3 +22,8 @@ And finally, start your bot with:
 ```sh
 npm start
 ```
+
+Before pushing any changes or submitting PRs, don't forget to run eslint, or our CI may reject your request:
+```sh
+npm run lint -- .
+```
