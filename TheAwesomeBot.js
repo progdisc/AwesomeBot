@@ -1,12 +1,14 @@
 const path = require('path');
 const Discord = require('discord.js');
 const Settings = require('./settings.json');
+const Tokens = require('./tokens.json');
 
 class TheAwesomeBot {
   constructor(token, discordOpt) {
     this.token = token;
     this.client = new Discord.Client(discordOpt || { autoReconnect: true });
     this.settings = Settings;
+    this.settings.tokens = Tokens; // insert tokens into our settings obj
     this.commands = {};
     this.usageList = '';
 
