@@ -27,10 +27,12 @@ module.exports = {
       request(options, (err, res, bod) => {
         const xkcdBody = cheerio.load(bod);
         try {
-          const href = xkcdBody('.result__a').first().attr('href');
-          if (href.includes('https://xkcd.com/') || href.includes('https://www.xkcd.com/')) {
-            xkcdLink = href;
-          }
+          xkcdBody('.result__a').each((i, link) => {
+            const href = link.attribs.href;
+            if (href.search(/^https?:\/\/(www\.)?xkcd\.com\//) !== -1 && xkcdLink === false) {
+              xkcdLink = href;
+            }
+          });
         } catch (e) {
           message.channel.sendMessage('There was a problem with DuckDuckGo query.');
         }
