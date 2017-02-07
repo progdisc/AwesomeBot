@@ -21,7 +21,7 @@ module.exports = {
 
     // get geocode info
     let requestURL = geocodeEndpoint
-                            .replace('gkey', weatherConfig.geocode_api_key)
+                            .replace('gkey', weatherConfig.geocode_api_key || bot.settings.tokens.google_geocode)
                             .replace('input', cmdArgs);
     // do percentage encoding
     requestURL = encodeURI(requestURL);
@@ -43,7 +43,7 @@ module.exports = {
       const coordinate = geocodeData.results[0].geometry.location;
       // get weather data
       requestURL = darkskyEndpoint
-                          .replace('key', weatherConfig.darksky_api_key)
+                          .replace('key', weatherConfig.darksky_api_key || bot.settings.tokens.darksky)
                           .replace('lat', coordinate.lat)
                           .replace('lng', coordinate.lng);
 
