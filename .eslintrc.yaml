@@ -7,5 +7,6 @@ rules:
   no-constant-condition: [error, {checkLoops: false}]
   no-unused-vars: [error, {argsIgnorePattern: '^(err$|_)'}]
   no-param-reassign: [error, {props: false}]
+  import/no-unresolved: [error, {ignore: ['tokens.json']}]
 extends: airbnb
 installedESLint: true
