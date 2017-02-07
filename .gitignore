@@ -6,3 +6,6 @@
 .vscode
 
 *.DS_Store
+
+# ignore tokens file
+/tokens.json
