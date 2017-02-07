@@ -29,7 +29,7 @@ module.exports = {
         try {
           xkcdBody('.result__a').each((i, link) => {
             const href = link.attribs.href;
-            if ((href.includes('https://xkcd.com/') || href.includes('https://www.xkcd.com/')) && xkcdLink === false) {
+            if (href.search(/^https?:\/\/(www\.)?xkcd\.com\//) !== -1 && xkcdLink === false) {
               xkcdLink = href;
             }
           });
