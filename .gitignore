@@ -9,3 +9,6 @@
 
 # ignore tokens file
 /tokens.json
+
+# tern server
+.tern-port
