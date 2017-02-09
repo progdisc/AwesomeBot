@@ -1,6 +1,6 @@
 Use codeblocks for formatting code:
-\```<language name>
-<your code here>
+\```language_name<enter>
+# code here
 \```
 
 For example:
@@ -8,3 +8,4 @@ For example:
 if True:
     print("Hi!")
 ```
+You can find the available language names here: <https://highlightjs.readthedocs.io/en/latest/css-classes-reference.html#language-names-and-aliases>
