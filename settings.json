@@ -23,6 +23,9 @@
       "wind": ":wind_blowing_face:"
     }
   },
+  "info":{
+    "repo":"samoxive/awesomebot"
+  },
   "commands": [
     "help",
     "jseval",
@@ -33,7 +36,8 @@
     "xkcd",
     "weather",
     "server",
-    "pbf"
+    "pbf",
+    "info"
   ],
   "openshift": {
     "heartbeat_channel": "keepalive",
