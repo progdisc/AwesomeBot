@@ -21,7 +21,9 @@
   "dependencies": {
     "cheerio": "^0.22.0",
     "discord.js": "^11.0.0",
-    "request": "^2.79.0"
+    "replit-client": "^0.19.0",
+    "request": "^2.81.0",
+    "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
     "eslint": "^3.0.1",
