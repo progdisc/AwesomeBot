@@ -29,7 +29,6 @@
   "commands": [
     "help",
     "eval",
-    "jseval",
     "pro",
     "stream",
     "uptime",
