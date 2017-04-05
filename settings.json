@@ -24,7 +24,7 @@
     }
   },
   "info":{
-    "repo":"samoxive/awesomebot"
+    "repo":"rgoliveira/awesomebot"
   },
   "commands": [
     "help",
