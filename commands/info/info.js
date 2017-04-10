@@ -2,6 +2,8 @@ const request = require('request');
 const exec = require('child_process').exec;
 const discord = require('discord.js');
 
+const time = require('../../lib/utils.js').time;
+
 const githubCommits = 'https://api.github.com/repos/$repo/commits';
 const githubContributors = 'https://api.github.com/repos/$repo/contributors';
 const githubRepo = 'https://github.com/$repo';
@@ -9,12 +11,9 @@ const commitTemplate = '$username - $message';
 const markdownLink = '[$text]($link)';
 const description = 'Message cmd for available commands.';
 let config;
-let uptime;
 const lastCommit = {};
 const currentCommit = {};
 let contributorsMessage = '';
-let embed;
-let contributorsEmbed;
 const githubHeaders = {
   'User-Agent': 'TheAwesomeBot',
   'Accept': 'application/vnd.github.v3+json', // eslint-disable-line quote-props
@@ -83,7 +82,6 @@ function getContributors() {
 
 function infoInit(bot) {
   config = bot.settings.info;
-  uptime = bot.commands.uptime;
   // get current checked out commit from git
   getCurrentCommit();
   // get latest commit in git repo
@@ -94,37 +92,27 @@ function infoInit(bot) {
 function infoRun(bot, message, cmdArgs) {
   if (cmdArgs) {
     if (cmdArgs === 'contributors') {
-      if (contributorsEmbed != null) {
-        message.channel.sendEmbed(contributorsEmbed);
-      } else {
-        contributorsEmbed = new discord.RichEmbed();
-        contributorsEmbed.setColor('#4286f4')
-          .setTitle('Top 10 contributors of AwesomeBot:')
-          .setDescription(contributorsMessage);
-        message.channel.sendEmbed(contributorsEmbed);
-      }
-      return false;
+      const contributorsEmbed = new discord.RichEmbed();
+      contributorsEmbed.setColor('#4286f4')
+        .setTitle('Top 10 contributors of AwesomeBot:')
+        .setDescription(contributorsMessage);
+      message.channel.sendEmbed(contributorsEmbed);
     }
-    return true;
-  }
-  if (embed != null) {
+  } else {
+    const embed = new discord.RichEmbed();
+    embed.setColor('#4286f4')
+      .setAuthor('TheAwesomeBot', bot.client.user.avatarURL, githubRepo.replace('$repo', config.repo))
+      .setFooter(description.replace('cmd', bot.settings.bot_cmd))
+      .addField('Uptime', time.timeElapsed(bot.bootTime, new Date()))
+      .addField('Latest Commit', markdownLink.replace('$text', lastCommit.message).replace('$link', lastCommit.link))
+      .setDescription('An open source bot made with :heart:');
+    // let the users know if bot is working on a rolled back commit
+    if (currentCommit !== lastCommit) {
+      embed.addField('Current Commit', markdownLink.replace('$text', currentCommit.message)
+        .replace('$link', currentCommit.link));
+    }
     message.channel.sendEmbed(embed);
-    return false;
   }
-  embed = new discord.RichEmbed();
-  embed.setColor('#4286f4')
-    .setAuthor('TheAwesomeBot', bot.client.user.avatarURL, githubRepo.replace('$repo', config.repo))
-    .setFooter(description.replace('cmd', bot.settings.bot_cmd))
-    .addField('Uptime', uptime.getUptime())
-    .addField('Latest Commit', markdownLink.replace('$text', lastCommit.message).replace('$link', lastCommit.link))
-    .setDescription('An open source bot made with :heart:');
-  // let the users know if bot is working on a rolled back commit
-  if (currentCommit !== lastCommit) {
-    embed.addField('Current Commit', markdownLink.replace('$text', currentCommit.message)
-      .replace('$link', currentCommit.link));
-  }
-  message.channel.sendEmbed(embed);
-  return false;
 }
 
 module.exports = {
