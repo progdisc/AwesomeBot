@@ -13,6 +13,7 @@ try {
 
 class TheAwesomeBot {
   constructor(token, discordOpt) {
+    this.bootTime = new Date();
     this.token = token;
     this.client = new Discord.Client(discordOpt || { autoReconnect: true });
     this.settings = Settings;
