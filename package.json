@@ -23,6 +23,7 @@
     "discord.js": "^11.0.0",
     "replit-client": "^0.19.0",
     "request": "^2.81.0",
+    "request-promise": "^4.2.0",
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
