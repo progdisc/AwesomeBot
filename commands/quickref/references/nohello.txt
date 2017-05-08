@@ -1,16 +1,16 @@
 __**Please Don't Say Just Hello In Chat**__
 ```
-2010-07-19 12:32:12 you: Hi
-2010-07-19 12:32:15 co-worker: Hello.
+2016-07-19 12:32:12 you: Hi
+2016-07-19 12:32:15 co-worker: Hello.
 ## CO-WORKER WAITS WHILE YOU PHRASE YOUR QUESTION
-2010-07-19 12:34:01 you: I'm working on [something] and I'm trying to do [etc...]
-2010-07-19 12:35:21 co-worker: Oh, that's [answer...]
+2016-07-19 12:34:01 you: I'm working on [something] and I'm trying to do [etc...]
+2016-07-19 12:35:21 co-worker: Oh, that's [answer...]
 ```
 It's as if you called someone on the phone and said "Hi!" and then put them on hold!
 
 Please do this instead:
 ```
-2010-07-19 12:32:12 you: Hi -- I'm working on [something] and I'm trying to do [etc...]
-2010-07-19 12:33:32 co-worker: [answers question]
+2016-07-19 12:32:12 you: Hi -- I'm working on [something] and I'm trying to do [etc...]
+2016-07-19 12:33:32 co-worker: [answers question]
 ```
-*Please continue your education at http://nohello.com/*
+*You can learn more at http://nohello.com/*
