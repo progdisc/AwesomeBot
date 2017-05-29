@@ -39,7 +39,7 @@ function getLastCommit() {
     const commitMessage = commitData[0].commit.message.replace('\n\n', ' ')
       .replace('\n', ' ');
     lastCommit.link = commitData[0].html_url;
-    lastCommit.username = commitData[0].author.login;
+    lastCommit.username = commitData[0].author ? commitData[0].author.login : 'unkown';
     lastCommit.message = commitTemplate.replace('$username', lastCommit.username)
       .replace('$message', commitMessage);
   });
@@ -59,7 +59,7 @@ function getCurrentCommit() {
         return;
       }
       currentCommit.link = JSON.parse(body).html_url;
-      currentCommit.username = JSON.parse(body).author.login;
+      currentCommit.username = JSON.parse(body).author ? JSON.parse(body).author.login : 'unkown';
       currentCommit.message = commitTemplate.replace('$username', currentCommit.username)
         .replace('$message', gitOutput.split(' ').slice(1).join(' '));
     });
