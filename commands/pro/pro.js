@@ -37,7 +37,7 @@ function getProsOnline(guild) {
 
 function loadAndMatchPros(bot) {
   updateProsMatcher();
-  const helpChannel = bot.client.channels.find('name', 'helpdirectory');
+  const helpChannel = bot.client.channels.find('name', 'help-directory');
 
   return helpChannel.fetchMessages({ limit: 100 })
   .then((messages) => {
