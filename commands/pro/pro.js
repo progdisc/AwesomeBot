@@ -81,11 +81,11 @@ module.exports = {
     if (message.mentions.users.size > 0) {
       const memberId = message.mentions.users.first().id;
       if (memberId in proHelpText) {
-        let response = `**Help Directory entry for user ${message.mentions.users.first().displayName}:**\n`;
+        let response = `**Help Directory entry for user ${message.mentions.users.first().username}:**\n`;
         response += proHelpText[memberId];
         message.channel.sendMessage(response);
       } else {
-        message.channel.sendMessage(`Could not find user ${message.mentions.users.first().displayName} in directory`);
+        message.channel.sendMessage(`Could not find user ${message.mentions.users.first().username} in directory`);
       }
       return false;
     }
