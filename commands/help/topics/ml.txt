@@ -1,0 +1,19 @@
+See these links/courses/videos for learning Machine Learning topics:
+
+Free Course - Andrew Ng's Course
+<https://www.coursera.org/learn/machine-learning>
+
+Paid Book - Introduction to Statistical Learning
+<http://www-bcf.usc.edu/~gareth/ISL/>
+
+Free Book - Deep Learning Book - !WARNING MATH HEAVY!
+<http://www.deeplearningbook.org/>
+
+Free Book - Neural Networks and Deep Learning - !WARNING MATH HEAVY!
+<http://neuralnetworksanddeeplearning.com/chap1.html>
+
+YouTube - Sentdex
+<https://www.youtube.com/sentdex>
+
+YouTube - Siraj Raval
+<https://www.youtube.com/channel/UCWN3xxRkmTPmbKwht9FuE5A>
