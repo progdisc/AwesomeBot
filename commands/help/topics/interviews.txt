@@ -8,4 +8,3 @@ Paid Book - Programming Interviews Exposed
 
 Paid Book - Elements of Programming Interviews !WARNING COMES IN SEVERAL LANGUAGES!
 <bit.ly/epipython>
-
