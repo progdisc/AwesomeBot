@@ -3,7 +3,7 @@ See these links/courses/videos for learning Machine Learning topics:
 Free Course - Andrew Ng's Course
 <https://www.coursera.org/learn/machine-learning>
 
-Paid Book - Introduction to Statistical Learning
+Free Book - Introduction to Statistical Learning
 <http://www-bcf.usc.edu/~gareth/ISL/>
 
 Free Book - Deep Learning Book - !WARNING MATH HEAVY!
