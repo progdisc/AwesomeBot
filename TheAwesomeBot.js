@@ -117,7 +117,7 @@ class TheAwesomeBot {
           usageStrs.push(usageObj.toString());
         }
 
-        usageStrs.forEach(u => (this.usageList += `\n- ${this.settings.bot_cmd} ${u}`));
+        this.usageList += usageStrs.reduce((list, str) => list + `\n- ${this.settings.bot_cmd} ${str}`, '');
       }
     });
   }
