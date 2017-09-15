@@ -3,7 +3,7 @@ Here are some programming podcasts:
 *Coder Radio* by Jupiter Broadcasting
 <http://www.jupiterbroadcasting.com/show/coderradio/>
 
-*Talk Python to Me*
+*Talk Python to Me* by Michael Kennedy
 <https://talkpython.fm>
 
 *Simple Programmer* by John Sonmez
