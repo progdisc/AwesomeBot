@@ -20,3 +20,6 @@ Free Course: Introduction to Computing using Python
 
 Paid Course Library: In-depth Fundamentals, Flask, Django and more
 <https://teamtreehouse.com/library/topic:python>
+
+Free Course: Problem Solving with Algorithms and Data Structures using Python
+<https://runestone.academy/runestone/static/pythonds/index.html>
