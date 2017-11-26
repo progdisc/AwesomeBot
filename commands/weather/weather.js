@@ -66,7 +66,7 @@ function getWeatherData(location) {
     const timezone = weatherData.timezone;
 
     const result = {
-      location,
+      location: location.address,
       offset,
       localTime,
       dateString,
