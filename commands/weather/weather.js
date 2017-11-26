@@ -67,6 +67,8 @@ function getWeatherData(location) {
 
     const result = {
       location: location.address,
+      // A temporary fix until the eventual refactor.
+      address: location.address,
       offset,
       localTime,
       dateString,
