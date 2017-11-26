@@ -90,7 +90,7 @@ function generateEmbed(data, verbose) {
   if (verbose) {
     embed.setColor('#4286f4')
       .setFooter(`Local Time: ${data.dateString}`)
-      .setTitle(`Weather in ${data.address}`)
+      .setTitle(`Weather in ${data.location}`)
       .addField('Summary', data.summary)
       .addField('Temperature °C', `${data.temperatureC} °C`, true)
       .addField('Temperature °F', `${data.temperatureF} °F`, true)
